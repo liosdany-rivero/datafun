@@ -1,0 +1,1247 @@
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #121212;
+  color: #ffffff;
+}
+
+
+/* Encabezados */
+h1, h2, h3, h4, h5, h6 {
+
+   color: #4CAF50 !important;
+}
+
+
+
+
+/*.container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 20px;
+}*/
+
+.form-container {
+  max-width: 400px;
+  margin: auto;
+  padding: 20px;
+ /* background: #1e1e1e; 
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5); */
+}
+
+.form-container label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: bold;
+}
+
+.form-container input,
+.form-container select,
+.form-container button {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 16px;
+  border: 1px solid #333;
+  border-radius: 4px;
+  background-color: #1e1e1e;
+  color: #ffffff;
+  border-color: #45a049;
+}
+
+
+.form-container button {
+  margin-top: 15px; /* Espacio extra encima del botón */
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+.form-container button:hover {
+  background-color: #45a049;
+}
+
+.form-container textarea {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 16px;
+  border: 1px solid #333;
+  border-radius: 4px;
+  background-color: #1e1e1e;
+  color: #ffffff;
+  resize: vertical;
+  font-family: inherit;
+   border-color: #45a049;
+}
+
+/* Estilo para el checkbox y su etiqueta */
+.form-container label input[type="checkbox"] {
+  margin-right: 8px;
+  accent-color: #4CAF50; /* Color del check */
+}
+
+.form-container label {
+  display: flex;
+  align-items: center;
+  margin-bottom: 16px;
+  font-weight: bold;
+  color: #4CAF50;
+}
+
+
+.form-container .checkbox-group {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 16px;
+  font-weight: bold;
+}
+
+.sub-form{
+ /* background: #1e1e1e; */
+  padding: 15px;
+ /* border-radius: 5px; */
+  margin-top: 20px;
+}
+
+/* Estilo base del menú */
+.main-menu {
+  display: flex;
+  justify-content: center;
+  background-color: #1e1e1e;
+  border-bottom: 2px solid #4CAF50;
+  padding: 10px;
+}
+
+.main-menu ul {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+/* Estilo para cada ítem */
+.main-menu ul li {
+  position: relative;
+  margin: 0 10px;
+}
+
+/* Estilo para enlaces */
+.main-menu ul li a {
+  text-decoration: none;
+  color: white;
+  padding: 12px 20px;
+  display: block;
+  border-radius: 4px;
+  font-weight: bold;
+  transition: all 0.3s ease;
+}
+
+.main-menu ul li a:hover,
+.main-menu ul li a:focus {
+  background-color: #333;
+  outline: none;
+}
+
+.submenu {
+  position: relative;
+}
+
+
+.dropdown {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background-color: #1e1e1e;
+  border: 1px solid #333;
+  border-radius: 4px;
+  min-width: 180px;
+  z-index: 1000;
+  flex-direction: column;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+/* Mostrar submenú al hacer hover en el padre */
+.submenu:hover .dropdown,
+.submenu:focus-within .dropdown {
+  display: flex;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Estilo para ítems del submenú */
+.dropdown li a {
+  padding: 12px 20px;
+  color: white;
+  border-bottom: 1px solid #333;
+  white-space: nowrap;
+}
+
+.dropdown li:last-child a {
+  border-bottom: none;
+}
+
+.dropdown li a:hover {
+  background-color: #333;
+}
+
+.btn-preview {
+  display: inline-block;
+  padding: 8px 15px;
+  border-radius: 4px;
+  text-decoration: none;
+  font-size: 0.9em;
+  font-weight: bold;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.btn-preview:hover {
+  background-color: #45a049;
+  color: white;
+}
+
+
+/* Menú secundario  */
+.sub-menu {
+    background-color: #2a2a2a;
+    padding: 8px;
+    border-bottom: 1px solid #666;
+    margin-bottom: 20px;
+}
+
+.sub-menu ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+}
+
+.sub-menu li {
+    margin: 0 10px;
+}
+
+.sub-menu a {
+    color: #ddd;
+    text-decoration: none;
+    padding: 8px 15px;
+    border-radius: 3px;
+    font-size: 0.9em;
+    transition: all 0.3s;
+}
+
+.sub-menu a:hover {
+    background-color: #666;
+    color: #fff;
+}
+
+.sub-menu button {
+    background-color: transparent;
+    color: #ddd;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 3px;
+    font-size: 0.9em;
+    cursor: pointer;
+    transition: all 0.3s;
+    text-decoration: none;
+    font-family: inherit;
+}
+
+.sub-menu button:hover {
+    background-color: #666;
+    color: #fff;
+}
+
+
+
+/* Estilos base (escritorio) */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+}
+
+.table th, 
+.table td {
+  border: 1px solid #333;
+  padding: 8px;
+  text-align: left;
+}
+
+.table th {
+  background-color: #333;
+  color: white;
+}
+
+.table-action-buttons {
+      display: flex;
+      gap: 5px;
+}
+.table-action-buttons button {
+      padding: 5px 10px;
+      cursor: pointer;
+}
+
+/* paginacion */
+
+.pagination {
+  text-align: center;
+  margin-top: 20px;
+  flex-wrap: wrap;
+}
+.pagination a {
+  display: inline-block;
+  margin: 4px;
+  padding: 8px 12px;
+  background-color: #333;
+  color: white;
+  border-radius: 4px;
+  text-decoration: none;
+  font-size: 0.9em;
+  transition: background-color 0.3s ease;
+}
+.pagination a.active {
+  background-color: #4CAF50;
+  font-weight: bold;
+}
+.pagination a:hover {
+  background-color: #45a049;
+}
+
+
+.input-group {
+  margin-bottom: 15px;
+}
+
+.input-combo {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.input-combo input {
+  flex: 1;
+  min-width: 0; /* Evita problemas de desbordamiento */
+}
+
+/* Alertas */
+
+
+.alert-error {
+  background-color: transparent; /* Fondo transparente */
+  color: #ff4d4d;                /* Texto rojo */
+  padding: 5px;                  /* Menos espacio interno */
+  margin: 10px 0;
+  margin-bottom: 10x;
+  font-size: 0.9rem;             /* Texto más pequeño */
+  font-weight: bold;
+  text-align: center;
+  animation: shake 0.3s ease-in-out;
+}
+
+.alert-success {
+  background-color: transparent; /* Fondo transparente */
+  color: #4CAF50;                /* Texto rojo */
+  padding: 5px;                  /* Menos espacio interno */
+  margin: 10px 0;
+  margin-bottom: 10x;
+  font-size: 0.9rem;             /* Texto más pequeño */
+  font-weight: bold;
+  text-align: center;
+  animation: shake 0.3s ease-in-out;
+}
+
+
+/* Estilo para el grupo de input + botón */
+.input-with-button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+}
+
+/* Estilo para el input dentro del grupo */
+.input-with-button input {
+  flex: 1;
+  margin-bottom: 0; /* Elimina el margen inferior que podría desalinear */
+  height: 40px; /* Altura fija para que coincida con el botón */
+}
+
+/* Estilo para el botón dentro del grupo */
+.input-with-button .btn-preview {
+  height: 40px; /* Misma altura que el input */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  padding: 0 15px;
+  margin-bottom: 0; /* Elimina el margen inferior */
+}
+
+/* Estilos específicos para la tabla del contador */
+#tablaContador {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 20px 0;
+}
+
+#tablaContador thead th {
+  color: #ffffff;
+  text-align: left;
+  padding-bottom: 10px;
+  font-weight: normal;
+}
+
+#tablaContador tbody tr {
+  height: 50px; /* Altura fija para todas las filas */
+}
+
+#tablaContador td {
+  padding: 0;
+  vertical-align: middle;
+  border: none;
+}
+
+
+/* Estilos específicos para la tabla del contador */
+#tablaContador {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 20px 0;
+}
+
+#tablaContador thead th {
+  color: #ffffff;
+  text-align: left;
+  padding-bottom: 10px;
+  font-weight: normal;
+}
+
+#tablaContador tbody tr {
+  height: 50px; /* Altura fija para todas las filas */
+}
+
+#tablaContador td {
+  padding: 0;
+  margin: 0;
+  vertical-align: middle;
+  border: none;
+  position: relative; /* Necesario para el input al 100% */
+}
+
+/* Estilo para la columna de cantidad */
+#tablaContador td:nth-child(2) {
+  padding: 0; /* Eliminamos cualquier padding */
+  width: 40%;
+}
+
+/* Estilo para el input de cantidad - AHORA AL 100% */
+#tablaContador .input-cantidad {
+  width: 100%;
+  height: 100%; /* Ocupa toda la altura de la celda */
+  min-height: 50px; /* Igual a la altura de la fila */
+  padding: 10px;
+  margin: 0;
+  background-color: #1e1e1e;
+  color: #ffffff;
+  border: 1px solid #333;
+  border-radius: 0;
+  box-sizing: border-box;
+  position: absolute; /* Para ocupar todo el espacio */
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+
+/* Ajustes para las otras columnas */
+#tablaContador td:first-child,
+#tablaContador td:last-child {
+  background-color: #1e1e1e;
+  color: #ffffff;
+  padding: 0 15px;
+  border: 1px solid #333;
+  height: 100%; /* Aseguramos misma altura */
+}
+
+#tablaContador td:first-child {
+  border-radius: 4px 0 0 4px;
+  width: 30%;
+}
+
+#tablaContador td:last-child {
+  border-radius: 0 4px 4px 0;
+  width: 30%;
+}
+
+/* Estilo para la fila de total */
+#tablaContador tr:last-child td {
+  background-color: transparent;
+  border: none;
+  padding-top: 15px;
+  height: auto;
+}
+
+#totalFinal {
+  font-size: 1.1em;
+  color: #4CAF50;
+  
+}
+
+strong {
+  color: #4CAF50 !important;
+}
+
+
+/* Responsive */
+
+@media (max-width: 768px) {
+
+  body{
+      max-width: 100%;
+  }
+
+  .form-container {
+   /* max-width: 100%;  lo quite de aqui porque lo puse en el body de arriba*/
+    padding: 10px;
+  }
+  .main-menu {
+    padding: 5px;
+    background-color: #1a1a1a;
+  }
+  
+  .main-menu ul {
+    flex-direction: column;
+    gap: 0;
+    width: 100%;
+  }
+  
+  .main-menu ul li {
+    margin: 0;
+    width: 100%;
+    border-bottom: 1px solid #333;
+  }
+  
+  .main-menu ul li a {
+    padding: 15px 20px;
+    border-radius: 0;
+  }
+  
+  /* Estilo para el submenú en móvil */
+  .dropdown {
+    position: static;
+    display: none;
+    width: 100%;
+    box-shadow: none;
+    border: none;
+    background-color: #252525;
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+  
+  /* Mostrar submenú al hacer clic/tap */
+  .submenu.active .dropdown {
+    display: flex;
+  }
+  
+  /* Icono para indicar submenú */
+  .submenu > a::after {
+    content: '▾';
+    float: right;
+    transition: transform 0.3s ease;
+  }
+  
+  .submenu.active > a::after {
+    transform: rotate(180deg);
+  }
+  
+  /* Estilo para items del submenú en móvil */
+  .dropdown li a {
+    padding-left: 30px !important;
+    background-color: #252525;
+  }
+
+
+/* Estilos responsivos para móviles */
+.table {
+    border: 0;
+  }
+  
+  .table thead {
+    display: none; /* Ocultamos los headers en móvil */
+  }
+  
+  .table tr {
+    display: block;
+    margin-bottom: 15px;
+    border: 1px solid #333;
+  }
+  
+  .table td {
+    display: block;
+    text-align: right;
+    padding-left: 50%;
+    position: relative;
+    border-bottom: 1px solid #ddd;
+    border-right: 0;
+    border-left: 0;
+  }
+  
+  .table td:last-child {
+    border-bottom: 0;
+  }
+  
+  /* Pseudoelementos para mostrar los headers como labels */
+  .table td::before {
+    content: attr(data-label);
+    position: absolute;
+    left: 8px;
+    width: 45%;
+    padding-right: 10px;
+    text-align: left;
+    font-weight: bold;
+    color: #333;
+  }
+  
+  /* Opcional: alternar colores para mejor legibilidad */
+  .table tr:nth-child(even) {
+    background-color: #f2f2f2;
+  }
+
+ #tablaContador {
+    display: block;
+  }
+  
+  #tablaContador thead {
+    display: none;
+  }
+  
+  #tablaContador tbody tr {
+    display: flex;
+    flex-direction: column;
+    height: auto;
+    margin-bottom: 15px;
+    background-color: #1e1e1e;
+    border-radius: 4px;
+    border: 1px solid #333;
+    padding: 10px;
+  }
+  
+  #tablaContador td {
+    display: block;
+    width: 100% ;
+    padding: 8px 0 ;
+    height: auto;
+    background-color: transparent ;
+    border: none ;
+    text-align: left;
+  }
+  
+  #tablaContador td:first-child,
+  #tablaContador td:last-child {
+    padding: 8px 0 ;
+    border: none ;
+    border-radius: 0 ;
+  }
+  
+  #tablaContador .input-cantidad {
+    position: static;
+    width: 100%;
+    height: 40px;
+    min-height: auto;
+    margin: 5px 0;
+  }
+  
+  #tablaContador td::before {
+    content: attr(data-label);
+    font-weight: bold;
+    display: block;
+    margin-bottom: 5px;
+    color: #4CAF50;
+  }
+  
+  #tablaContador tr:last-child {
+    background-color: transparent;
+    border: none;
+  }
+
+
+
+}
+
+
+/* Estilos específicos para el contador de dinero modal 
+#contadorModal .form-container {
+  background-color: #1e1e1e;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+  padding: 20px;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+#contadorModal h2 {
+  color: #4CAF50;
+  text-align: center;
+  margin-bottom: 20px;
+  border-bottom: 1px solid #333;
+  padding-bottom: 10px;
+}
+
+#contadorModal .table {
+  margin-bottom: 25px;
+}
+
+#contadorModal .btn-preview {
+  margin: 10px 5px;
+  padding: 10px 20px;
+}
+
+#contadorModal .form-container form {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+*/
+/* Estilo para el botón de volver */
+.btn-volver {
+  display: inline-block;
+  padding: 10px 20px;
+  background-color: #333;
+  color: white;
+  text-decoration: none;
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  margin: 5px;
+}
+
+.btn-volver:hover {
+  background-color: #444;
+}
+
+
+
+/* Fuerza estilos para inputs autocompletados en los diferentes navegadores*/
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+    -webkit-text-fill-color: white; /* Color del texto */
+    -webkit-box-shadow: 0 0 0px 1000px #1e1e1e inset ; /* Fondo */
+    caret-color: white; /* Color del cursor */
+    transition: background-color 5000s ease-in-out 0s; /* Elimina el fondo amarillo */
+}
+
+@supports selector(:autofill) {
+  input:autofill {
+    color: white;
+    background-color: #1e1e1e;
+    caret-color: white;
+  }
+}
+
+input {
+  background-color: #1e1e1e;
+  color: white;
+  caret-color: white;
+}
+
+/* Opcional: Estilo para el placeholder */
+input::placeholder {
+    color: #aaa;
+}
+
+
+
+
+
+/*
+
+.logout-button {
+  display: inline-block;
+  padding: 10px 20px;
+  background-color: #f44336;
+  color: white;
+  text-decoration: none;
+  border-radius: 4px;
+}
+
+.logout-button:hover {
+  background-color: #d32f2f;
+}
+
+
+
+
+/* Estilos para operaciones
+.denomination-row {
+    display: flex;
+    margin: 10px 0;
+    align-items: center;
+}
+.denomination-row label {
+    width: 150px;
+}
+
+/* Modal de confirmación 
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.7);
+    z-index: 1000;
+}
+.modal-content {
+    background: #1e1e1e;
+    margin: 10% auto;
+    padding: 20px;
+    width: 80%;
+    max-width: 600px;
+}
+
+/* Estilos para cash_operations 
+
+
+.recent-operations {
+    margin-top: 30px;
+    overflow-x: auto;
+}
+
+.recent-operations table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.recent-operations th, 
+.recent-operations td {
+    padding: 10px;
+    border: 1px solid #333;
+    text-align: left;
+}
+
+.recent-operations th {
+    background-color: #333;
+}
+
+.total-amount {
+    font-weight: bold;
+    font-size: 1.1em;
+    margin-top: 10px;
+}
+
+
+.btn-delete {
+    background-color: #f44336;
+    color: white;
+    margin-top: 20px;
+}
+
+
+  /* Estilos para el modal */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.7);
+    backdrop-filter: blur(5px); /* Efecto de desenfoque opcional */
+}
+
+.modal-content {
+    background-color: #1e1e1e;
+    margin: 5% auto;
+    padding: 20px;
+    border: 2px solid #4CAF50; /* Borde verde */
+    width: 90%;
+    max-width: 800px;
+    border-radius: 8px;
+    position: relative;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    color: #ffffff;
+    animation: modalFadeIn 0.3s ease-out;
+}
+
+@keyframes modalFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.close-modal {
+    position: absolute;
+    right: 15px;
+    top: 5px;
+    color: #aaa;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: color 0.3s;
+}
+
+.close-modal:hover {
+    color: #4CAF50; /* Color verde al hacer hover */
+}
+
+/* Estilos específicos para el contenido del contador dentro del modal */
+.modal-content h2 {
+    color: #4CAF50;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #333;
+}
+
+/* Ajustes para el iframe del contador */
+#contadorIframe {
+    width: 100%;
+    height: 70vh;
+    border: none;
+    background: transparent;
+}
+
+/* Estilos responsivos */
+@media (max-width: 768px) {
+    .modal-content {
+        width: 95%;
+        margin: 10% auto;
+        padding: 15px;
+    }
+    
+    #contadorIframe {
+        height: 60vh;
+    }
+}
+
+/* Efecto de hover para los botones dentro del modal */
+.modal-content .btn-preview {
+    background-color: #4CAF50;
+    color: white;
+    transition: all 0.3s;
+}
+
+.modal-content .btn-preview:hover {
+    background-color: #45a049;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+/* Estilo para el botón de volver en el modal */
+.modal-content .btn-volver {
+    background-color: #333;
+    color: white;
+    transition: all 0.3s;
+}
+
+.modal-content .btn-volver:hover {
+    background-color: #444;
+}
+
+.input-with-button {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+}
+
+.input-with-button input {
+  flex: 1;
+  min-width: 120px;
+}
+
+.input-with-button button {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+/* Si necesitas que coincida exactamente con el input de la tabla */
+input[name="valor_contado_entrada"] {
+  height: 40px;
+  min-height: 40px;
+  box-sizing: border-box;
+}
+
+input[name="valor_entregado_salida"] {
+  height: 40px;
+  min-height: 40px;
+  box-sizing: border-box;
+}
+
+
+
+
+/*****/
+
+    /* Estilos para escritorio - igual que usuarios.php */
+    .table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 20px;
+    }
+    
+    .table th, 
+    .table td {
+        border: 1px solid #333333;
+        padding: 8px;
+        text-align: left;
+    }
+    
+    .table th {
+        background-color: #346e36;
+        color: white;
+    }
+    
+    .table tr {
+        background-color: #1e1e1e;
+    }
+    
+    /* Estilos para el formulario de filtros */
+    .filter-form {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 15px;
+        margin-bottom: 20px;
+        padding: 15px;
+        background-color: #1e1e1e;
+        border-radius: 5px;
+    }
+    
+    .filter-form .input-group {
+        margin-bottom: 0;
+    }
+    
+    .filter-form button {
+        align-self: flex-end;
+        height: fit-content;
+    }
+    
+    /* Estilos para el checkbox tramitado */
+    .tramitado-checkbox {
+        width: auto;
+        margin: 0;
+        accent-color: #4CAF50;
+    }
+    
+    /* Estilos responsivos - se mantienen igual */
+    /* Estilos responsivos para móviles */
+@media (max-width: 768px) {
+    .table {
+        border: 0;
+    }
+    
+    .table thead {
+        display: none; /* Ocultamos los headers en móvil */
+    }
+    
+    .table tr {
+        display: block;
+        margin-bottom: 15px;
+        border: 1px solid #333;
+        background-color: #1e1e1e; /* Fondo oscuro para todas las filas */
+    }
+    
+    .table tr:nth-child(even) {
+        background-color: #2a2a2a; /* Gris oscuro para filas pares */
+    }
+    
+    .table td {
+        display: block;
+        text-align: right;
+        padding-left: 50%;
+        position: relative;
+        border-bottom: 1px solid #3a3a3a; /* Borde más suave */
+        border-right: 0;
+        border-left: 0;
+    }
+    
+    .table td:last-child {
+        border-bottom: 0;
+    }
+    
+    /* Pseudoelementos para mostrar los headers como labels */
+    .table td::before {
+        content: attr(data-label);
+        position: absolute;
+        left: 8px;
+        width: 45%;
+        padding-right: 10px;
+        text-align: left;
+        font-weight: bold;
+        color: #4CAF50; /* Verde para las etiquetas */
+    }
+    
+    /* Eliminar el estilo alternado claro que estaba antes */
+    /* .table tr:nth-child(even) {
+        background-color: #f2f2f2;  <- ESTO SE ELIMINA
+    } */
+}
+
+/* Estilos específicos para la tabla del contador en móviles */
+@media (max-width: 768px) {
+  #tablaContador {
+    display: block;
+    width: 100%;
+    margin: 20px 0;
+    border: none;
+  }
+  
+  #tablaContador thead {
+    display: none;
+  }
+  
+  #tablaContador tbody {
+    display: block;
+    width: 100%;
+  }
+  
+  #tablaContador tbody tr {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 15px;
+    background-color: #1e1e1e;
+    border: 1px solid #333;
+    border-radius: 4px;
+    padding: 10px;
+    position: relative;
+    height: auto !important;
+  }
+  
+  #tablaContador tbody tr:last-child {
+    background-color: transparent;
+    border: none;
+    padding: 0;
+    margin-top: 20px;
+    flex-direction: row;
+    justify-content: space-between;
+  }
+  
+  #tablaContador td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    padding: 8px 0;
+    border: none;
+    text-align: right;
+    background-color: transparent;
+    position: relative;
+     color: #4CAF50 !important;
+  }
+  
+  #tablaContador td:first-child,
+  #tablaContador td:last-child {
+    padding: 8px 0;
+    border: none;
+    border-radius: 0;
+    background-color: transparent;
+  }
+  
+  /* Estilo para las etiquetas (denominación y monto) */
+  #tablaContador td::before {
+    content: attr(data-label);
+    font-weight: bold;
+    color: #4CAF50;
+    margin-right: 10px;
+    text-align: left;
+    position: static;
+    width: auto;
+    padding-right: 0;
+  }
+  
+  /* Estilo especial para la fila de total */
+  #tablaContador tr:last-child td {
+    display: flex;
+    justify-content: flex-end;
+    padding-top: 10px;
+    border-top: 1px solid #333;
+    width: auto;
+    flex: 1;
+  }
+  
+  #tablaContador tr:last-child td:first-child {
+    font-weight: bold;
+    color: #4CAF50;
+    justify-content: flex-start;
+  }
+  
+  #tablaContador tr:last-child td:last-child {
+    font-weight: bold;
+    color: #4CAF50;
+    font-size: 1.2em;
+    text-align: right;
+  }
+  
+  /* Estilo para el input de cantidad */
+  #tablaContador .input-cantidad {
+    width: 100px !important;
+    height: 40px !important;
+    padding: 8px !important;
+    margin: 5px 0 !important;
+    background-color: #1e1e1e !important;
+    color: #ffffff !important;
+    border: 1px solid #333 !important;
+    border-radius: 4px !important;
+    text-align: right !important;
+    position: static !important;
+    min-height: auto !important;
+    border-color: #4CAF50!important;
+  }
+  
+  /* Ajuste para la celda que contiene el input */
+  #tablaContador td:nth-child(2) {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    width: 100%;
+  }
+  
+  /* Eliminar el pseudo-elemento para la celda del input */
+  #tablaContador td:nth-child(2)::before {
+    content: none;
+  }
+}
+
+/* Estilo adicional para mejorar la usabilidad en móviles pequeños */
+@media (max-width: 480px) {
+  #tablaContador .input-cantidad {
+    width: 80px !important;
+  }
+  
+  #tablaContador td::before {
+    font-size: 0.9em;
+  }
+  
+  #tablaContador tr:last-child td {
+    font-size: 0.9em;
+  }
+  
+  #tablaContador tbody tr {
+    padding: 8px;
+  }
+}
