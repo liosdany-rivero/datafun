@@ -1,29 +1,25 @@
 <?php
-require_once('../controllers/config.php');
-include('../templates/header.php');
+require_once('../../controllers/config.php');
+include('../../templates/header.php');
 
 $numero = isset($_GET['numero']) ? intval($_GET['numero']) : 0;
+$from = isset($_GET['from']) ? $_GET['from'] : 'movimientos'; // Valor por defecto
+
 if (!$numero) {
-    echo "<p>⚠️ Operación no especificada.</p>";
-    exit();
+    header("Location: caja_principal_movimientos.php");
+    exit;
 }
 
 $operacion = mysqli_fetch_assoc(mysqli_query($conn, "SELECT * FROM caja_principal WHERE numero_operacion = $numero"));
-$entrada   = mysqli_fetch_assoc(mysqli_query($conn, "SELECT * FROM entradas_caja_principal WHERE numero_operacion = $numero"));
-$salida    = mysqli_fetch_assoc(mysqli_query($conn, "SELECT * FROM salidas_caja_principal WHERE numero_operacion = $numero"));
+$entrada   = mysqli_fetch_assoc(mysqli_query($conn, "SELECT * FROM caja_principal_entradas WHERE numero_operacion = $numero"));
+$salida    = mysqli_fetch_assoc(mysqli_query($conn, "SELECT * FROM caja_principal_salidas WHERE numero_operacion = $numero"));
 
 function obtenerNombreEstablecimiento($conn, $codigo)
 {
-    $res = mysqli_query($conn, "SELECT nombre FROM establecimientos WHERE codigo = $codigo");
+    $res = mysqli_query($conn, "SELECT nombre FROM centros_costo WHERE codigo = $codigo");
     return mysqli_fetch_assoc($res)['nombre'] ?? '---';
 }
 ?>
-
-<nav class="sub-menu">
-    <ul>
-        <li><a href="caja_principal.php" class="sub-menu-button">← Volver</a></li>
-    </ul>
-</nav>
 
 <div class="form-container">
     <h2>Detalles de operación #<?= $numero ?></h2>
@@ -33,6 +29,7 @@ function obtenerNombreEstablecimiento($conn, $codigo)
         <p><strong>Salida registrada:</strong> <?= number_format($operacion['salida'], 2) ?></p>
         <p><strong>Saldo acumulado:</strong> <?= number_format($operacion['saldo'], 2) ?></p>
     </div>
+    <br>
 
     <?php if ($entrada): ?>
         <div class="sub-form">
@@ -44,7 +41,7 @@ function obtenerNombreEstablecimiento($conn, $codigo)
                 </tr>
                 <tr>
                     <td><strong>Establecimiento:</strong></td>
-                    <td><?= obtenerNombreEstablecimiento($conn, $entrada['establecimiento_codigo']) ?></td>
+                    <td><?= obtenerNombreEstablecimiento($conn, $entrada['centro_costo_codigo']) ?></td>
                 </tr>
                 <?php if ($entrada['fecha_documento']): ?>
                     <tr>
@@ -66,6 +63,7 @@ function obtenerNombreEstablecimiento($conn, $codigo)
                 </tr>
             </table>
         </div>
+
     <?php elseif ($salida): ?>
         <div class="sub-form">
             <h3>Detalle de salida</h3>
@@ -76,7 +74,7 @@ function obtenerNombreEstablecimiento($conn, $codigo)
                 </tr>
                 <tr>
                     <td><strong>Establecimiento:</strong></td>
-                    <td><?= obtenerNombreEstablecimiento($conn, $salida['establecimiento_codigo']) ?></td>
+                    <td><?= obtenerNombreEstablecimiento($conn, $salida['centro_costo_codigo']) ?></td>
                 </tr>
                 <tr>
                     <td><strong>Cantidad que salió:</strong></td>
@@ -93,4 +91,15 @@ function obtenerNombreEstablecimiento($conn, $codigo)
     <?php endif; ?>
 </div>
 
-<?php include('../templates/footer.php'); ?>
+
+<BR>
+<BR>
+<BR>
+
+
+<div id="barra-estado">
+    <ul class="secondary-nav-menu">
+        <li><a href="caja_principal_<?= $from ?>.php" class="nav-button">← Volver</a></li>
+    </ul>
+</div>
+<?php include('../../templates/footer.php'); ?>
