@@ -145,6 +145,16 @@ if (isset($_SESSION['user_id'])) {
                         </li>
                     <?php endif; ?>
 
+                    <?php if (isset($permisosCentros[1])): // Caja Trinidad 
+                    ?>
+                        <li class="menu-item-has-children">
+                            <a href="javascript:void(0)">Tasas</a>
+                            <ul class="sub-menu">
+                                <li><a href="../tasa/tasas.php">Tasas de Cambio</a></li>
+                            </ul>
+                        </li>
+                    <?php endif; ?>
+
                     <!-- CAJAS -->
                     <?php if ($tienePermisosCajas): ?>
                         <li class="menu-item-has-children">

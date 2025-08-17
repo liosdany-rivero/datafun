@@ -233,7 +233,6 @@ $stmt_salidas->close();
 ob_end_flush();
 ?>
 
-
 <!-- Contenedor principal -->
 <div class="form-container">
     <h2>Caja Principal - Flujo</h2>
@@ -344,15 +343,10 @@ ob_end_flush();
                             <td data-label="Saldo"><?= number_format($row['saldo'], 2) ?></td>
                             <td data-label="Observaciones"><?= htmlspecialchars($row['observaciones'] ?? '') ?></td>
                             <td data-label="Tramitado">
-                                <?php if ($puede_tramitar): ?>
-                                    <form method="POST" class="tramitado-form" style="display: inline;">
-                                        <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
-                                        <input type="hidden" name="numero_operacion" value="<?= $row['numero_operacion'] ?>">
-                                        <input type="hidden" name="tipo_operacion" value="entrada">
-                                        <input type="checkbox" name="tramitado" class="tramitado-checkbox"
-                                            <?= $row['tramitado'] ? 'checked' : '' ?>>
-                                        <input type="hidden" name="actualizar_tramitado" value="1">
-                                    </form>
+                                <?php if ($puede_tramitar && !$row['tramitado']): ?>
+                                    <button class="btn-tramitar" data-numero="<?= $row['numero_operacion'] ?>" data-tipo="entrada">
+                                        Tramitar
+                                    </button>
                                 <?php else: ?>
                                     <?= $row['tramitado'] ? '✅' : '❌' ?>
                                 <?php endif; ?>
@@ -397,17 +391,11 @@ ob_end_flush();
                             <td data-label="Monto"><?= number_format($row['salida'], 2) ?></td>
                             <td data-label="Saldo"><?= number_format($row['saldo'], 2) ?></td>
                             <td data-label="Observaciones"><?= htmlspecialchars($row['observaciones'] ?? '') ?></td>
-                            <!-- En la sección de salidas -->
                             <td data-label="Tramitado">
-                                <?php if ($puede_tramitar): ?>
-                                    <form method="POST" class="tramitado-form" style="display: inline;">
-                                        <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
-                                        <input type="hidden" name="numero_operacion" value="<?= $row['numero_operacion'] ?>">
-                                        <input type="hidden" name="tipo_operacion" value="salida"> <!-- Cambiado a "salida" -->
-                                        <input type="checkbox" name="tramitado" class="tramitado-checkbox"
-                                            <?= $row['tramitado'] ? 'checked' : '' ?>>
-                                        <input type="hidden" name="actualizar_tramitado" value="1">
-                                    </form>
+                                <?php if ($puede_tramitar && !$row['tramitado']): ?>
+                                    <button class="btn-tramitar" data-numero="<?= $row['numero_operacion'] ?>" data-tipo="salida">
+                                        Tramitar
+                                    </button>
                                 <?php else: ?>
                                     <?= $row['tramitado'] ? '✅' : '❌' ?>
                                 <?php endif; ?>
@@ -423,7 +411,6 @@ ob_end_flush();
             </table>
         <?php endif; ?>
     </div>
-
 </div>
 
 <BR>
@@ -433,20 +420,31 @@ ob_end_flush();
 <div id="barra-estado">
     <ul class="secondary-nav-menu">
         <li>
-
             <button id="mostrarFiltrosBtn" class="nav-button" style=" display: <?= (isset($_GET['centro_costo']) || isset($_GET['tramitado']) || isset($_GET['tipo_operacion']) || isset($_GET['fecha_inicio']) || isset($_GET['fecha_fin'])) ? 'block' : 'none' ?>;">
                 Mostrar Filtros
             </button>
-
         </li>
     </ul>
+</div>
+
+<!-- Modal para confirmar tramitación -->
+<div id="modalTramitar" class="modal">
+    <div class="modal-content">
+        <span class="close-modal">&times;</span>
+        <h3>¿Desea tramitar esta operación?</h3>
+        <input type="hidden" id="modalNumeroOperacion">
+        <input type="hidden" id="modalTipoOperacion">
+        <div class="modal-buttons">
+            <button id="btnTramitarSi" class="btn-confirm">Sí</button>
+            <button id="btnTramitarNo" class="btn-cancel">No</button>
+        </div>
+    </div>
 </div>
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         // Script para ocultar automáticamente las notificaciones después de 5 segundos
         const notifications = document.querySelectorAll('.floating-notification');
-
         notifications.forEach(notification => {
             setTimeout(() => {
                 notification.classList.remove('show');
@@ -519,61 +517,192 @@ ob_end_flush();
                 behavior: 'smooth'
             });
         });
-    });
 
-    // Manejar el cambio en las casillas de tramitado con AJAX
-    document.querySelectorAll('.tramitado-checkbox').forEach(checkbox => {
-        checkbox.addEventListener('change', function() {
-            const form = this.closest('form');
-            const formData = new FormData(form);
+        // Modal para tramitar operaciones
+        const modal = document.getElementById('modalTramitar');
+        const btnTramitarSi = document.getElementById('btnTramitarSi');
+        const btnTramitarNo = document.getElementById('btnTramitarNo');
+        const closeModal = document.querySelector('.close-modal');
+        const csrfToken = "<?= $_SESSION['csrf_token'] ?>";
+
+        // Mostrar modal al hacer clic en botón Tramitar
+        document.querySelectorAll('.btn-tramitar').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.getElementById('modalNumeroOperacion').value = this.dataset.numero;
+                document.getElementById('modalTipoOperacion').value = this.dataset.tipo;
+                modal.style.display = 'block';
+            });
+        });
+
+        // Cerrar modal
+        closeModal.addEventListener('click', function() {
+            modal.style.display = 'none';
+        });
+
+        // Tramitar operación (Sí)
+        btnTramitarSi.addEventListener('click', function() {
+            const numero = document.getElementById('modalNumeroOperacion').value;
+            const tipo = document.getElementById('modalTipoOperacion').value;
+            actualizarTramitado(numero, tipo, 1);
+            modal.style.display = 'none';
+        });
+
+        // No tramitar operación (No)
+        btnTramitarNo.addEventListener('click', function() {
+            const numero = document.getElementById('modalNumeroOperacion').value;
+            const tipo = document.getElementById('modalTipoOperacion').value;
+            actualizarTramitado(numero, tipo, 0);
+            modal.style.display = 'none';
+        });
+
+        // Función para actualizar estado de tramitado
+        function actualizarTramitado(numero, tipo, estado) {
+            const formData = new FormData();
+            formData.append('csrf_token', csrfToken);
+            formData.append('numero_operacion', numero);
+            formData.append('tipo_operacion', tipo);
+            formData.append('tramitado', estado);
+            formData.append('actualizar_tramitado', 1);
 
             fetch('caja_principal_flujo.php', {
                     method: 'POST',
                     body: formData
                 })
-                .then(response => response.text())
+                .then(response => response.json())
                 .then(data => {
-                    // Mostrar notificación de éxito/error
-                    const notification = document.createElement('div');
-                    notification.className = 'floating-notification success show';
-                    notification.textContent = 'Estado de tramitado actualizado correctamente';
-                    document.querySelector('.form-container').appendChild(notification);
+                    if (data.success) {
+                        // Mostrar notificación
+                        const notification = document.createElement('div');
+                        notification.className = 'floating-notification success show';
+                        notification.textContent = data.message;
+                        document.querySelector('.form-container').appendChild(notification);
 
-                    // Ocultar la notificación después de 5 segundos
-                    setTimeout(() => {
-                        notification.classList.remove('show');
-                        setTimeout(() => notification.remove(), 300);
-                    }, 5000);
+                        // Actualizar la UI
+                        const btn = document.querySelector(`.btn-tramitar[data-numero="${numero}"]`);
+                        if (btn) {
+                            if (estado) {
+                                btn.parentElement.innerHTML = '✅';
+                            } else {
+                                btn.parentElement.innerHTML = '❌';
+                            }
+                        }
 
-                    // Actualizar la clase de la fila para reflejar el nuevo estado
-                    const row = this.closest('tr');
-                    if (this.checked) {
-                        row.classList.add('tramitado');
-                        row.classList.remove('no-tramitado');
+                        // Ocultar notificación después de 5 segundos
+                        setTimeout(() => {
+                            notification.classList.remove('show');
+                            setTimeout(() => notification.remove(), 300);
+                        }, 5000);
                     } else {
-                        row.classList.add('no-tramitado');
-                        row.classList.remove('tramitado');
+                        throw new Error(data.message);
                     }
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    // Mostrar notificación de error
                     const notification = document.createElement('div');
                     notification.className = 'floating-notification error show';
-                    notification.textContent = 'Error al actualizar el estado de tramitado';
+                    notification.textContent = error.message || 'Error al actualizar el estado de tramitado';
                     document.querySelector('.form-container').appendChild(notification);
 
-                    // Ocultar la notificación después de 5 segundos
                     setTimeout(() => {
                         notification.classList.remove('show');
                         setTimeout(() => notification.remove(), 300);
                     }, 5000);
-
-                    // Revertir el cambio en el checkbox si falla
-                    this.checked = !this.checked;
                 });
-        });
+        }
+    });
+
+    // Cerrar modal al hacer clic fuera del contenido
+    window.addEventListener('click', function(event) {
+        const modal = document.getElementById('modalTramitar');
+        if (event.target === modal) {
+            modal.style.display = 'none';
+        }
     });
 </script>
+
+<style>
+    /* Estilos para el botón Tramitar */
+    .btn-tramitar {
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+        padding: 5px 10px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+    }
+
+    .btn-tramitar:hover {
+        background-color: #45a049;
+    }
+
+    /* Estilos para el modal */
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.4);
+    }
+
+    .modal-content {
+        background-color: #fefefe;
+        margin: 15% auto;
+        padding: 20px;
+        border: 1px solid #888;
+        width: 300px;
+        border-radius: 5px;
+        text-align: center;
+    }
+
+    .close-modal {
+        color: #aaa;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+        cursor: pointer;
+    }
+
+    .close-modal:hover {
+        color: black;
+    }
+
+    .modal-buttons {
+        margin-top: 20px;
+    }
+
+    .btn-confirm {
+        background-color: #4CAF50;
+        color: white;
+        padding: 8px 16px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        margin-right: 10px;
+    }
+
+    .btn-cancel {
+        background-color: #f44336;
+        color: white;
+        padding: 8px 16px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+
+    /* Estilos para filas tramitadas/no tramitadas */
+    .tramitado {
+        background-color: #f0fff0;
+        /* Verde muy claro para tramitados */
+    }
+
+    .no-tramitado {
+        background-color: #fff0f0;
+        /* Rojo muy claro para no tramitados */
+    }
+</style>
 
 <?php include('../../templates/footer.php'); ?>

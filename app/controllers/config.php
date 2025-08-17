@@ -61,7 +61,7 @@ if ($conn->connect_error) {
   die("Error de conexión con el servidor. Por favor contacte al administrador.");
 }
 
-***************************************************************
+/***************************************************************
    CONFIGURACIÓN PARA PRUEBAS (INFINITE FREE)
    Notas para mantenimiento:
    - Esta sección está comentada para trabajar en local
@@ -70,7 +70,7 @@ if ($conn->connect_error) {
      2. Descomentar este bloque
      3. Verificar que las credenciales sean las correctas para tu hosting
    - Nunca subir credenciales a repositorios públicos
-*************************************************************** 
+ ***************************************************************
 
 // Configuración para Infinite Free
 $servername = "sql104.infinityfree.com"; // Servidor proporcionado por el hosting

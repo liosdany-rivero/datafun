@@ -1251,3 +1251,18 @@ a.btn-primary:hover  , button.btn-primary:hover  {
 a.btn-primary:active, button.btn-primary:active {
     background-color: var(--color-presionado);
 }
+
+/* Añade esto al final de tu archivo CSS */
+.table-action-buttons .btn-preview {
+    flex: 1; /* Hace que ambos botones ocupen el mismo espacio */
+    min-width: 80px; /* Ancho mínimo para ambos botones */
+    text-align: center;
+}
+
+/* Para pantallas móviles */
+@media (max-width: 768px) {
+    .table-action-buttons .btn-preview {
+        width: 100%;
+        margin-bottom: 5px;
+    }
+}

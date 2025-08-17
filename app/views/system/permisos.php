@@ -120,156 +120,87 @@ $por_pagina = 15;
 $filtro_usuario = isset($_GET['f_usuario']) ? intval($_GET['f_usuario']) : null;
 $filtro_establecimiento = isset($_GET['f_establecimiento']) ? intval($_GET['f_establecimiento']) : null;
 
-// Construir consulta base para conteo
-$count_query = "SELECT COUNT(*) as total FROM permisos p";
-$where_conditions = [];
-$count_params = [];
-
-if ($filtro_usuario) {
-    $where_conditions[] = "p.user_id = ?";
-    $count_params[] = $filtro_usuario;
-}
-
-if ($filtro_establecimiento) {
-    $where_conditions[] = "p.centro_costo_codigo = ?";
-    $count_params[] = $filtro_establecimiento;
-}
-
-if (!empty($where_conditions)) {
-    $count_query .= " WHERE " . implode(" AND ", $where_conditions);
-}
-
-// Obtener total de registros (considerando filtros)
-if (!empty($count_params)) {
-    $stmt_count = $conn->prepare($count_query);
-    $types = str_repeat('i', count($count_params));
-    $stmt_count->bind_param($types, ...$count_params);
-    $stmt_count->execute();
-    $count_result = $stmt_count->get_result();
-    $total_registros = $count_result->fetch_assoc()['total'];
-    $stmt_count->close();
-} else {
-    $count_result = mysqli_query($conn, $count_query);
-    $total_registros = $count_result->fetch_assoc()['total'];
-}
-
-$total_paginas = max(1, ceil($total_registros / $por_pagina));
-
-// Obtener página actual desde la URL (default: 1)
-$pagina_actual = isset($_GET['pagina']) ? max(1, intval($_GET['pagina'])) : 1;
-$inicio = ($pagina_actual - 1) * $por_pagina;
-
 // =============================================
-// SECCIÓN 4: OBTENCIÓN DE DATOS
+// SECCIÓN 4: OBTENCIÓN DE DATOS (VERSIÓN CORREGIDA)
 // =============================================
 
-/**
- * 4.1 Construir consulta con filtros y paginación
- */
-$query_base = "
-  SELECT p.user_id, u.username AS usuario, p.centro_costo_codigo, 
-         e.nombre AS establecimiento, p.permiso
-  FROM permisos p
-  JOIN users u ON p.user_id = u.id
-  JOIN centros_costo e ON p.centro_costo_codigo = e.codigo
-  WHERE e.Establecimiento = 1
-";
-
-$query = $query_base;
-if (!empty($where_conditions)) {
-    $query .= " AND " . implode(" AND ", $where_conditions);
-}
-$query .= " ORDER BY u.username, e.nombre LIMIT $inicio, $por_pagina";
-
-/**
- * 4.2 Obtener permisos con filtros aplicados
- */
-$permisos = [];
-if (!empty($count_params)) {
-    $stmt = $conn->prepare($query);
-    $stmt->bind_param($types, ...$count_params);
-    $stmt->execute();
-    $result = $stmt->get_result();
-} else {
-    $result = mysqli_query($conn, $query);
-}
-
-while ($row = mysqli_fetch_assoc($result)) {
-    $permisos[] = $row;
-}
-
-// Añadir condiciones WHERE según los filtros
-$where_conditions = [];
+// Construir condiciones WHERE según los filtros
+$where_conditions = ["(e.Establecimiento = 1 OR e.modulo = 1)"]; // Condición base
 $query_params = [];
+$types = '';
 
 if ($filtro_usuario) {
     $where_conditions[] = "p.user_id = ?";
     $query_params[] = $filtro_usuario;
+    $types .= 'i';
 }
 
 if ($filtro_establecimiento) {
     $where_conditions[] = "p.centro_costo_codigo = ?";
     $query_params[] = $filtro_establecimiento;
+    $types .= 'i';
 }
 
-// Construir consulta final
-$query = $query_base;
-if (!empty($where_conditions)) {
-    $query .= " AND " . implode(" AND ", $where_conditions);
-}
-$query .= " ORDER BY u.username, e.nombre LIMIT $inicio, $por_pagina";
+// Consulta base para obtener permisos
+$query_base = "
+    SELECT p.user_id, u.username AS usuario, p.centro_costo_codigo, 
+           e.nombre AS establecimiento, p.permiso
+    FROM permisos p
+    JOIN users u ON p.user_id = u.id
+    JOIN centros_costo e ON p.centro_costo_codigo = e.codigo
+";
 
-/**
- * 4.3 Obtener permisos con filtros aplicados
- */
-$permisos = [];
+// Consulta para conteo total
+$count_query = "SELECT COUNT(*) as total FROM permisos p
+                JOIN centros_costo e ON p.centro_costo_codigo = e.codigo
+                WHERE " . implode(" AND ", $where_conditions);
+
+// Obtener página actual desde la URL (default: 1)
+$pagina_actual = isset($_GET['pagina']) ? max(1, intval($_GET['pagina'])) : 1;
+$inicio = ($pagina_actual - 1) * $por_pagina;
+
+
+
+// Consulta para datos paginados
+$data_query = $query_base . " WHERE " . implode(" AND ", $where_conditions) .
+    " ORDER BY u.username, e.nombre LIMIT ?, ?";
+$query_params_paginated = $query_params;
+$query_params_paginated[] = $inicio;
+$query_params_paginated[] = $por_pagina;
+$types_paginated = $types . 'ii';
+
+
+// Obtener total de registros
+$stmt_count = $conn->prepare($count_query);
 if (!empty($query_params)) {
-    // Consulta preparada para filtros
-    $stmt = $conn->prepare($query);
-    $types = str_repeat('i', count($query_params)); // Todos los parámetros son enteros
-    $stmt->bind_param($types, ...$query_params);
-    $stmt->execute();
-    $result = $stmt->get_result();
-} else {
-    // Consulta normal sin filtros
-    $result = mysqli_query($conn, $query);
-}
-
-while ($row = mysqli_fetch_assoc($result)) {
-    $permisos[] = $row;
-}
-
-// Obtener total de registros para paginación (considerando filtros)
-$count_query = "SELECT COUNT(*) as total FROM permisos p";
-if (!empty($where_conditions)) {
-    $count_query .= " WHERE " . implode(" AND ", $where_conditions);
-}
-
-if (!empty($query_params)) {
-    $stmt_count = $conn->prepare($count_query);
     $stmt_count->bind_param($types, ...$query_params);
-    $stmt_count->execute();
-    $count_result = $stmt_count->get_result();
-    $total_registros = $count_result->fetch_assoc()['total'];
-    $stmt_count->close();
-} else {
-    $count_result = mysqli_query($conn, $count_query);
-    $total_registros = $count_result->fetch_assoc()['total'];
 }
+$stmt_count->execute();
+$count_result = $stmt_count->get_result();
+$total_registros = $count_result->fetch_assoc()['total'];
+$stmt_count->close();
 
+// Calcular total de páginas
 $total_paginas = max(1, ceil($total_registros / $por_pagina));
 
-/**
- * 4.4 Obtener datos para formularios
- * - Listado de usuarios para select
- * - Listado de establecimientos para select
- */
+// Obtener datos paginados
+$permisos = [];
+$stmt_data = $conn->prepare($data_query);
+$stmt_data->bind_param($types_paginated, ...$query_params_paginated);
+$stmt_data->execute();
+$result = $stmt_data->get_result();
+
+while ($row = $result->fetch_assoc()) {
+    $permisos[] = $row;
+}
+$stmt_data->close();
+
+// Obtener datos para formularios (resetear punteros)
 $usuarios = mysqli_query($conn, "SELECT id, username FROM users ORDER BY username");
-$establecimientos = mysqli_query($conn, "SELECT codigo, nombre FROM centros_costo WHERE Establecimiento = 1 ORDER BY nombre");
+$establecimientos = mysqli_query($conn, "SELECT codigo, nombre FROM centros_costo WHERE Establecimiento = 1 OR modulo = 1 ORDER BY nombre");
 
 ob_end_flush();
 ?>
-
 
 <!-- ============================================= -->
 <!-- SECCIÓN 5: INTERFAZ DE USUARIO (HTML) -->
@@ -277,10 +208,6 @@ ob_end_flush();
 <!-- Contenedor principal -->
 <div class="form-container">
     <h2>Gestión de permisos</h2>
-
-    <!-- ============================================= -->
-    <!-- SECCIÓN 5.1: NOTIFICACIONES FLOTANTES -->
-    <!-- ============================================= -->
 
     <!-- Notificación de éxito (verde) -->
     <?php if (isset($_SESSION['success_msg'])): ?>
@@ -298,16 +225,12 @@ ob_end_flush();
         <?php unset($_SESSION['error_msg']); ?>
     <?php endif; ?>
 
-
-    <!-- ============================================= -->
-    <!-- SECCIÓN 5.1: FORMULARIO DE FILTRADO -->
-    <!-- ============================================= -->
-
+    <!-- Formulario de filtrado -->
     <div class="filter-container">
         <form method="GET" action="permisos.php" class="filter-form">
             <div class="filter-group">
                 <label for="f_usuario">Filtrar por Usuario:</label>
-                <select name="f_usuario" id="f_usuario" onchange="this.form.submit()">
+                <select name="f_usuario" id="f_usuario" onchange="applyFilters()">
                     <option value="">-- Todos los usuarios --</option>
                     <?php mysqli_data_seek($usuarios, 0); ?>
                     <?php while ($u = mysqli_fetch_assoc($usuarios)): ?>
@@ -320,7 +243,7 @@ ob_end_flush();
 
             <div class="filter-group">
                 <label for="f_establecimiento">Filtrar por Establecimiento:</label>
-                <select name="f_establecimiento" id="f_establecimiento" onchange="this.form.submit()">
+                <select name="f_establecimiento" id="f_establecimiento" onchange="applyFilters()">
                     <option value="">-- Todos los establecimientos --</option>
                     <?php mysqli_data_seek($establecimientos, 0); ?>
                     <?php while ($e = mysqli_fetch_assoc($establecimientos)): ?>
@@ -332,16 +255,13 @@ ob_end_flush();
             </div>
 
             <!-- Mantener parámetro de página en los filtros -->
-            <input type="hidden" name="pagina" value="<?= $pagina_actual ?>">
+            <input type="hidden" name="pagina" value="1">
         </form>
     </div>
 
+    <br>
 
-    <bR>
-
-    <!-- ============================================= -->
-    <!-- SECCIÓN 5.2: TABLA DE PERMISOS -->
-    <!-- ============================================= -->
+    <!-- Tabla de permisos -->
     <h2>Permisos de la aplicación</h2>
     <table class="table">
         <thead>
@@ -355,7 +275,6 @@ ob_end_flush();
         <tbody>
             <?php foreach ($permisos as $row): ?>
                 <tr>
-                    <!-- Todos los outputs están protegidos con htmlspecialchars() -->
                     <td data-label="Usuario"><?= htmlspecialchars($row['usuario']) ?></td>
                     <td data-label="Establecimiento"><?= htmlspecialchars($row['establecimiento']) ?></td>
                     <td data-label="Permiso"><?= htmlspecialchars($row['permiso']) ?></td>
@@ -374,7 +293,6 @@ ob_end_flush();
                 </tr>
             <?php endforeach; ?>
 
-            <!-- Mensaje cuando no hay registros -->
             <?php if (empty($permisos)): ?>
                 <tr>
                     <td colspan="4" class="text-center">No hay permisos registrados</td>
@@ -383,14 +301,8 @@ ob_end_flush();
         </tbody>
     </table>
 
-
-
-    <!-- ============================================= -->
-    <!-- SECCIÓN 5.3: PAGINACIÓN -->
-    <!-- ============================================= -->
-
+    <!-- Paginación -->
     <div class="pagination">
-        <!-- Función para generar URL con filtros -->
         <?php
         function urlConFiltros($pagina)
         {
@@ -405,42 +317,35 @@ ob_end_flush();
         }
         ?>
 
-        <!-- Enlace a primera página -->
         <?php if ($pagina_actual > 1): ?>
             <a href="<?= urlConFiltros(1) ?>">&laquo; Primera</a>
             <a href="<?= urlConFiltros($pagina_actual - 1) ?>">&lsaquo; Anterior</a>
         <?php endif; ?>
 
         <?php
-        // Mostrar rango de páginas alrededor de la actual (máximo 5)
         $inicio_paginas = max(1, $pagina_actual - 2);
         $fin_paginas = min($total_paginas, $pagina_actual + 2);
 
-        // Mostrar puntos suspensivos si hay páginas ocultas al inicio
         if ($inicio_paginas > 1) echo '<span>...</span>';
 
-        // Mostrar páginas en el rango calculado
         for ($i = $inicio_paginas; $i <= $fin_paginas; $i++): ?>
             <a href="<?= urlConFiltros($i) ?>" class="<?= $i === $pagina_actual ? 'active' : '' ?>">
                 <?= $i ?>
             </a>
         <?php endfor;
 
-        // Mostrar puntos suspensivos si hay páginas ocultas al final
         if ($fin_paginas < $total_paginas) echo '<span>...</span>';
         ?>
 
-        <!-- Enlace a última página -->
         <?php if ($pagina_actual < $total_paginas): ?>
             <a href="<?= urlConFiltros($pagina_actual + 1) ?>">Siguiente &rsaquo;</a>
             <a href="<?= urlConFiltros($total_paginas) ?>">Última &raquo;</a>
         <?php endif; ?>
     </div>
 
-    <br>
-    <br>
+    <br><br>
 
-    <!-- Agrega esto en la sección de formularios (antes del div id="barra-estado") -->
+    <!-- Formulario para crear permiso -->
     <div id="createFormContainer" class="sub-form" style="display: none;">
         <h3>Asignar nuevo permiso</h3>
         <form method="POST" action="permisos.php">
@@ -477,8 +382,6 @@ ob_end_flush();
         </form>
     </div>
 
-
-
     <!-- Formulario para eliminar permiso -->
     <div id="deleteFormContainer" class="sub-form" style="display: none;">
         <h3>¿Eliminar permiso de <span id="deleteUsuarioDisplay"></span> sobre <span id="deleteEstablecimientoDisplay"></span>?</h3>
@@ -490,12 +393,9 @@ ob_end_flush();
             <button type="button" onclick="hideForms()">Cancelar</button>
         </form>
     </div>
-
 </div>
 
-<br>
-<br>
-<br>
+<br><br><br>
 <div id="barra-estado">
     <ul class="secondary-nav-menu">
         <li><button onclick="showCreateForm()" class="nav-button">+ Nuevo Permiso</button></li>
@@ -503,32 +403,17 @@ ob_end_flush();
     </ul>
 </div>
 
-
-
-
-<!-- SECCIÓN 5: JAVASCRIPT PARA INTERACCIÓN -->
 <script>
     /**
      * Muestra el formulario de eliminación con los datos del permiso
-     * @param {number} userId - ID del usuario
-     * @param {number} codigo - Código del establecimiento
-     * @param {string} usuario - Nombre del usuario
-     * @param {string} establecimiento - Nombre del establecimiento
      */
     function showDeleteForm(userId, codigo, usuario, establecimiento) {
-        // Ocultar cualquier otro formulario visible
         hideForms();
-
-        // Establecer los valores en el formulario de eliminación
         document.getElementById('delete_user_id').value = userId;
         document.getElementById('delete_codigo').value = codigo;
         document.getElementById('deleteUsuarioDisplay').textContent = usuario;
         document.getElementById('deleteEstablecimientoDisplay').textContent = establecimiento;
-
-        // Mostrar el formulario
         document.getElementById('deleteFormContainer').style.display = 'block';
-
-        // Desplazarse al formulario
         scrollToBottom();
     }
 
@@ -559,7 +444,15 @@ ob_end_flush();
         document.getElementById('createFormContainer').style.display = 'block';
         scrollToBottom();
     }
-</script>
 
+    /**
+     * Aplica los filtros al cambiar selección
+     */
+    function applyFilters() {
+        // Resetear a página 1 al cambiar filtros
+        document.querySelector('input[name="pagina"]').value = 1;
+        document.querySelector('.filter-form').submit();
+    }
+</script>
 
 <?php include('../../templates/footer.php'); ?>

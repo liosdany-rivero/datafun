@@ -9,6 +9,7 @@ ob_start();
  * - Campo código bloqueado en modo edición
  * - Lógica de actualización cambiada a UPDATE
  * - Checkboxes editables directamente en la tabla
+ * - Adición del campo Modulo
  */
 
 // SECCIÓN 1: INCLUSIONES Y CONFIGURACIÓN
@@ -59,6 +60,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['save_centro_costo'])) 
     $S_Caja_Gallet = isset($_POST['S_Caja_Gallet']) ? 1 : 0;
     $E_Caja_Cochi = isset($_POST['E_Caja_Cochi']) ? 1 : 0;
     $S_Caja_Cochi = isset($_POST['S_Caja_Cochi']) ? 1 : 0;
+    $Modulo = isset($_POST['Modulo']) ? 1 : 0;
 
     // Verificar si estamos en modo creación o edición
     $is_edit = isset($_POST['edit_mode']) && $_POST['edit_mode'] === 'true';
@@ -84,12 +86,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['save_centro_costo'])) 
                     E_Caja_Gallet = ?, 
                     S_Caja_Gallet = ?, 
                     E_Caja_Cochi = ?, 
-                    S_Caja_Cochi = ? 
+                    S_Caja_Cochi = ?,
+                    Modulo = ?
                     WHERE codigo = ?";
 
             $stmt = $conn->prepare($sql);
             $stmt->bind_param(
-                "siiiiiiiiiiii",
+                "siiiiiiiiiiiii",
                 $nombre,
                 $Establecimiento,
                 $E_Caja_Princ,
@@ -102,6 +105,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['save_centro_costo'])) 
                 $S_Caja_Gallet,
                 $E_Caja_Cochi,
                 $S_Caja_Cochi,
+                $Modulo,
                 $codigo
             );
         } else {
@@ -120,12 +124,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['save_centro_costo'])) 
 
             $sql = "INSERT INTO centros_costo 
                    (codigo, nombre, Establecimiento, E_Caja_Princ, S_Caja_Princ, E_Caja_Panad, S_Caja_Panad, 
-                   E_Caja_Trinid, S_Caja_Trinid, E_Caja_Gallet, S_Caja_Gallet, E_Caja_Cochi, S_Caja_Cochi) 
-                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                   E_Caja_Trinid, S_Caja_Trinid, E_Caja_Gallet, S_Caja_Gallet, E_Caja_Cochi, S_Caja_Cochi, Modulo) 
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
             $stmt = $conn->prepare($sql);
             $stmt->bind_param(
-                "isiiiiiiiiiii",
+                "isiiiiiiiiiiii",
                 $codigo,
                 $nombre,
                 $Establecimiento,
@@ -138,7 +142,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['save_centro_costo'])) 
                 $E_Caja_Gallet,
                 $S_Caja_Gallet,
                 $E_Caja_Cochi,
-                $S_Caja_Cochi
+                $S_Caja_Cochi,
+                $Modulo
             );
         }
 
@@ -241,6 +246,7 @@ ob_end_flush();
                 <th>S Caja Gallet</th>
                 <th>E Caja Cochi</th>
                 <th>S Caja Cochi</th>
+                <th>Módulo</th>
                 <th>Acciones</th>
             </tr>
         </thead>
@@ -262,6 +268,7 @@ ob_end_flush();
                     <td data-label="S Caja Gallet"><?= $row['S_Caja_Gallet'] ? '✅' : '❌' ?></td>
                     <td data-label="E Caja Cochi"><?= $row['E_Caja_Cochi'] ? '✅' : '❌' ?></td>
                     <td data-label="S Caja Cochi"><?= $row['S_Caja_Cochi'] ? '✅' : '❌' ?></td>
+                    <td data-label="Módulo"><?= $row['Modulo'] ? '✅' : '❌' ?></td>
 
                     <td data-label>
                         <div class="table-action-buttons">
@@ -278,7 +285,8 @@ ob_end_flush();
                                 '<?= $row['E_Caja_Gallet'] ?>',
                                 '<?= $row['S_Caja_Gallet'] ?>',
                                 '<?= $row['E_Caja_Cochi'] ?>',
-                                '<?= $row['S_Caja_Cochi'] ?>'
+                                '<?= $row['S_Caja_Cochi'] ?>',
+                                '<?= $row['Modulo'] ?>'
                             )">Editar</button>
                             <button onclick="showDeleteForm('<?= $row['codigo'] ?>', '<?= htmlspecialchars($row['nombre']) ?>')">Eliminar</button>
                         </div>
@@ -400,6 +408,11 @@ ob_end_flush();
                 Salida Caja Cochiquera
             </label>
 
+            <label class="checkbox-container">
+                <input type="checkbox" id="Modulo" name="Modulo" value="1" />
+                Módulo
+            </label>
+
             <div style="display: flex; gap: 10px; margin-top: 20px;">
                 <button type="submit" name="save_centro_costo" class="btn-primary">Guardar</button>
                 <button type="button" onclick="hideForms()" class="btn-primary">Cancelar</button>
@@ -465,9 +478,10 @@ ob_end_flush();
      * @param {boolean} S_Caja_Gallet - Estado checkbox
      * @param {boolean} E_Caja_Cochi - Estado checkbox
      * @param {boolean} S_Caja_Cochi - Estado checkbox
+     * @param {boolean} Modulo - Estado checkbox
      */
     function showEditForm(codigo, nombre, Establecimiento, E_Caja_Princ, S_Caja_Princ, E_Caja_Panad, S_Caja_Panad,
-        E_Caja_Trinid, S_Caja_Trinid, E_Caja_Gallet, S_Caja_Gallet, E_Caja_Cochi, S_Caja_Cochi) {
+        E_Caja_Trinid, S_Caja_Trinid, E_Caja_Gallet, S_Caja_Gallet, E_Caja_Cochi, S_Caja_Cochi, Modulo) {
         hideForms();
         document.getElementById('formTitle').textContent = 'Editar Centro de Costo';
         document.getElementById('edit_mode').value = 'true';
@@ -485,6 +499,7 @@ ob_end_flush();
         document.getElementById('S_Caja_Gallet').checked = S_Caja_Gallet == '1';
         document.getElementById('E_Caja_Cochi').checked = E_Caja_Cochi == '1';
         document.getElementById('S_Caja_Cochi').checked = S_Caja_Cochi == '1';
+        document.getElementById('Modulo').checked = Modulo == '1';
         document.getElementById('centroCostoFormContainer').style.display = 'block';
         scrollToBottom();
     }
