@@ -18,6 +18,8 @@ require_once('../../controllers/config.php');   // Configuración de conexión a
 
 // Verificar permisos de escritura para Caja Cochiquera (centro de costo 738)
 $tiene_permiso_editar = false;
+$tiene_permiso_leer = false;
+$tiene_permiso_tramitar = false;
 $sql_permiso = "SELECT permiso FROM permisos WHERE user_id = ? AND centro_costo_codigo = 738";
 $stmt_permiso = $conn->prepare($sql_permiso);
 $stmt_permiso->bind_param("i", $_SESSION['user_id']);
@@ -26,12 +28,14 @@ $result_permiso = $stmt_permiso->get_result();
 if ($result_permiso && $result_permiso->num_rows > 0) {
     $row = $result_permiso->fetch_assoc();
     $tiene_permiso_editar = ($row['permiso'] == 'escribir');
+    $tiene_permiso_leer = ($row['permiso'] == 'leer');
+    $tiene_permiso_tramitar = ($row['permiso'] == 'tramitar');
 }
 $stmt_permiso->close();
 
-if (!$tiene_permiso_editar) {
+if (!$tiene_permiso_editar && !$tiene_permiso_leer  && !$tiene_permiso_tramitar) {
     $_SESSION['error_msg'] = "⚠️ No tienes permisos para acceder a esta sección";
-    header("Location: index.php");
+    header("Location: caja_cochiquera_dashboard.php");
     exit();
 }
 
@@ -106,7 +110,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['delete_operation'])) {
     // Regenerar token y redirigir
     unset($_SESSION['csrf_token']);
     ob_clean();
-    header("Location: caja_cochiquera_operaciones.php");
+    header("Location: caja_cochiquera_dashboard.php");
     exit();
 }
 
@@ -205,7 +209,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['edit_operation'])) {
     // Regenerar token y redirigir
     unset($_SESSION['csrf_token']);
     ob_clean();
-    header("Location: caja_cochiquera_operaciones.php");
+    header("Location: caja_cochiquera_dashboard.php");
     exit();
 }
 

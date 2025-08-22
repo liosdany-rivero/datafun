@@ -159,7 +159,7 @@ function completarFechasFaltantes($conn)
 
     if ($result_ultima_fecha && mysqli_num_rows($result_ultima_fecha) > 0) {
         $ultima_fecha = mysqli_fetch_assoc($result_ultima_fecha)['fecha'];
-        $fecha_actual = date('Y-m-d', strtotime('+1 day'));
+        $fecha_actual = date('Y-m-d');
 
         // Si la última fecha es anterior a la fecha actual
         if ($ultima_fecha < $fecha_actual) {

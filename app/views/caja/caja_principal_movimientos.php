@@ -81,7 +81,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['save_entrada'])) {
     // Regenerar token y redirigir
     unset($_SESSION['csrf_token']);
     ob_clean();
-    header("Location: caja_principal_movimientos.php");
+    header("Location: caja_principal_dashboard.php");
     exit();
 }
 
@@ -275,7 +275,7 @@ ob_end_flush();
 
 <!-- SECCIÓN 4: INTERFAZ DE USUARIO -->
 <div class="form-container">
-    <h2>Caja Principal</h2>
+    <h2>Caja Principal - Movimientos</h2>
 
     <!-- Tabla de operaciones -->
     <table class="table">

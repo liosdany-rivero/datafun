@@ -20,7 +20,7 @@ $servername = "localhost"; // Servidor local por defecto
 $username = "root";        // Usuario root común en entornos locales
 $password = "";            // Contraseña vacía por defecto en XAMPP
 // Si configuraste contraseña en XAMPP, colócala aquí
-$database = "if0_39447217_auth_db"; // Nombre de BD local (debe coincidir con tu phpMyAdmin)
+$database = "db"; // Nombre de BD local (debe coincidir con tu phpMyAdmin)
 
 // Crear conexión usando MySQLi (orientado a objetos)
 $conn = new mysqli($servername, $username, $password, $database);
