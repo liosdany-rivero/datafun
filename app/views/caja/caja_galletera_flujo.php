@@ -208,7 +208,6 @@ ob_end_flush();
                         <th>Fecha Operación</th>
                         <th>Centro Costo</th>
                         <th>Monto</th>
-                        <th>Saldo</th>
                         <th>Observaciones</th>
                         <th>Tramitado</th>
                     </tr>
@@ -222,7 +221,6 @@ ob_end_flush();
                             <td data-label="Fecha Operación"><?= htmlspecialchars($row['fecha_operacion']) ?></td>
                             <td data-label="Centro Costo"><?= htmlspecialchars($row['nombre_centro_costo'] ?? 'N/A') ?></td>
                             <td data-label="Monto"><?= number_format($row['entrada'], 2) ?></td>
-                            <td data-label="Saldo"><?= number_format($row['saldo'], 2) ?></td>
                             <td data-label="Observaciones"><?= htmlspecialchars($row['observaciones'] ?? '') ?></td>
                             <td data-label="Tramitado">
                                 <?php if ($es_admin || $puede_tramitar): ?>
