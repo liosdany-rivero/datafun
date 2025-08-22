@@ -48,7 +48,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['delete_operation'])) {
     // Verificar permisos
     if (!$tiene_permiso_editar) {
         $_SESSION['error_msg'] = "⚠️ No tiene permisos para realizar esta acción";
-        header("Location: caja_trinidad_operaciones.php");
+        header("Location: caja_principal_operaciones.php");
         exit();
     }
 
@@ -212,7 +212,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['delete_operation'])) {
     // Regenerar token y redirigir
     unset($_SESSION['csrf_token']);
     ob_clean();
-    header("Location: caja_trinidad_dashboard.php");
+    header("Location: caja_principal_operaciones.php");
     exit();
 }
 
@@ -226,7 +226,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['save_edit'])) {
     // Verificar permisos
     if (!$tiene_permiso_editar) {
         $_SESSION['error_msg'] = "⚠️ No tiene permisos para realizar esta acción";
-        header("Location: caja_trinidad_operaciones.php");
+        header("Location: caja_principal_operaciones.php");
         exit();
     }
 
@@ -485,7 +485,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['save_edit'])) {
 
     // Regenerar token y redirigir
     unset($_SESSION['csrf_token']);
-    header("Location: caja_trinidad_dashboard.php");
+    header("Location: caja_principal_operaciones.php");
     exit();
 }
 

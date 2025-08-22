@@ -32,7 +32,7 @@ $stmt_permiso->close();
 
 if (!$tiene_permiso_editar) {
     $_SESSION['error_msg'] = "⚠️ No tienes permisos para acceder a esta sección";
-    header("Location: index.php");
+    header("Location: caja_panaderia_dashboard.php");
     exit();
 }
 

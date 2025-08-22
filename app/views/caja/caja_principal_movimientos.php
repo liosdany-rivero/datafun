@@ -81,7 +81,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['save_entrada'])) {
     // Regenerar token y redirigir
     unset($_SESSION['csrf_token']);
     ob_clean();
-    header("Location: caja_principal_dashboard.php");
+    header("Location: caja_principal_movimientos.php");
     exit();
 }
 

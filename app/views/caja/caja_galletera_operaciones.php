@@ -110,7 +110,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['delete_operation'])) {
     // Regenerar token y redirigir
     unset($_SESSION['csrf_token']);
     ob_clean();
-    header("Location: caja_galletera_dashboard.php");
+    header("Location: caja_galletera_operaciones.php");
     exit();
 }
 
@@ -209,7 +209,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['edit_operation'])) {
     // Regenerar token y redirigir
     unset($_SESSION['csrf_token']);
     ob_clean();
-    header("Location: caja_galletera_dashboard.php");
+    header("Location: caja_galletera_operaciones.php");
     exit();
 }
 
