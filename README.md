@@ -17,4 +17,4 @@ DataFun busca eliminar la fragmentación entre departamentos, automatizar proces
 - **Automatización**: Bash scripts para instalación y mantenimiento
 - **Compatibilidad**: Linux, Android (Termux), integración con GitHub
 
---hh
+
