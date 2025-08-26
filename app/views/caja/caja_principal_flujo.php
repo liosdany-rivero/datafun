@@ -310,12 +310,12 @@ ob_end_flush();
                     ?>
                         <tr class="<?= $tramitado_class ?>">
                             <td data-label="N° Operación"><?= htmlspecialchars($row['numero_operacion']) ?></td>
-                            <td data-label="Fecha Operación"><?= htmlspecialchars($row['fecha_operacion']) ?></td>
+                            <td data-label="Fecha Oper."><?= htmlspecialchars($row['fecha_operacion']) ?></td>
                             <td data-label="Tipo Entrada"><?= htmlspecialchars($row['tipo_entrada']) ?></td>
                             <td data-label="Centro Costo"><?= htmlspecialchars($row['nombre_centro_costo']) ?></td>
-                            <td data-label="Monto"><?= number_format($row['entrada'], 2) ?></td>
-                            <td data-label="Fecha Documento"><?= htmlspecialchars($row['fecha_documento'] ?? 'N/A') ?></td>
-                            <td data-label="Cantidad"><?= number_format($row['cantidad'] ?? 0, 2) ?></td>
+                            <td data-label="Monto Real"><?= number_format($row['entrada'], 2) ?></td>
+                            <td data-label="Fecha Docum."><?= htmlspecialchars($row['fecha_documento'] ?? 'N/A') ?></td>
+                            <td data-label="Cant. Ent."><?= number_format($row['cantidad'] ?? 0, 2) ?></td>
                             <td data-label="Observaciones"><?= htmlspecialchars($row['observaciones'] ?? '') ?></td>
                             <td data-label="Tramitado">
                                 <?php if ($puede_tramitar): ?>
@@ -364,10 +364,10 @@ ob_end_flush();
                     ?>
                         <tr class="<?= $tramitado_class ?>">
                             <td data-label="N° Operación"><?= htmlspecialchars($row['numero_operacion']) ?></td>
-                            <td data-label="Fecha Operación"><?= htmlspecialchars($row['fecha_operacion']) ?></td>
+                            <td data-label="Fecha Oper."><?= htmlspecialchars($row['fecha_operacion']) ?></td>
                             <td data-label="Tipo Salida"><?= htmlspecialchars($row['tipo_salida'] ?? 'N/A') ?></td>
                             <td data-label="Centro Costo"><?= htmlspecialchars($row['nombre_centro_costo']) ?></td>
-                            <td data-label="Monto"><?= number_format($row['salida'], 2) ?></td>
+                            <td data-label="Monto Real"><?= number_format($row['salida'], 2) ?></td>
                             <td data-label="Observaciones"><?= htmlspecialchars($row['observaciones'] ?? '') ?></td>
                             <!-- En la sección de salidas -->
                             <td data-label="Tramitado">

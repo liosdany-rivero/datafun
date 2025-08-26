@@ -229,7 +229,7 @@ ob_end_flush();
                     <td data-label="Entrada"><?= number_format($row['entrada'], 2) ?></td>
                     <td data-label="Salida"><?= number_format($row['salida'], 2) ?></td>
                     <td data-label="Saldo"><?= number_format($row['saldo'], 2) ?></td>
-                    <td data-label="Centro de Costo"><?= htmlspecialchars($row['centro_nombre']) ?></td>
+                    <td data-label="Centro costo"><?= htmlspecialchars($row['centro_nombre']) ?></td>
                     <td data-label="Observaciones"><?= htmlspecialchars($row['observaciones']) ?></td>
                 </tr>
             <?php endforeach; ?>

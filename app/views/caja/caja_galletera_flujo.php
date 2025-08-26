@@ -218,9 +218,9 @@ ob_end_flush();
                     ?>
                         <tr class="<?= $tramitado_class ?>">
                             <td data-label="N° Operación"><?= htmlspecialchars($row['numero_operacion']) ?></td>
-                            <td data-label="Fecha Operación"><?= htmlspecialchars($row['fecha_operacion']) ?></td>
-                            <td data-label="Centro Costo"><?= htmlspecialchars($row['nombre_centro_costo'] ?? 'N/A') ?></td>
-                            <td data-label="Monto"><?= number_format($row['entrada'], 2) ?></td>
+                            <td data-label="Fecha Oper."><?= htmlspecialchars($row['fecha_operacion']) ?></td>
+                            <td data-label="Centro costo"><?= htmlspecialchars($row['nombre_centro_costo'] ?? 'N/A') ?></td>
+                            <td data-label="Monto real"><?= number_format($row['entrada'], 2) ?></td>
                             <td data-label="Observaciones"><?= htmlspecialchars($row['observaciones'] ?? '') ?></td>
                             <td data-label="Tramitado">
                                 <?php if ($es_admin || $puede_tramitar): ?>
@@ -262,9 +262,9 @@ ob_end_flush();
                     ?>
                         <tr class="<?= $tramitado_class ?>">
                             <td data-label="N° Operación"><?= htmlspecialchars($row['numero_operacion']) ?></td>
-                            <td data-label="Fecha Operación"><?= htmlspecialchars($row['fecha_operacion']) ?></td>
-                            <td data-label="Centro Costo"><?= htmlspecialchars($row['nombre_centro_costo'] ?? 'N/A') ?></td>
-                            <td data-label="Monto"><?= number_format($row['salida'], 2) ?></td>
+                            <td data-label="Fecha Oper."><?= htmlspecialchars($row['fecha_operacion']) ?></td>
+                            <td data-label="Centro costo"><?= htmlspecialchars($row['nombre_centro_costo'] ?? 'N/A') ?></td>
+                            <td data-label="Monto real"><?= number_format($row['salida'], 2) ?></td>
                             <td data-label="Saldo"><?= number_format($row['saldo'], 2) ?></td>
                             <td data-label="Observaciones"><?= htmlspecialchars($row['observaciones'] ?? '') ?></td>
                             <td data-label="Tramitado">

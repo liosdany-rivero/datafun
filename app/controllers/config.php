@@ -14,7 +14,7 @@
    - La contraseña debe coincidir con tu configuración local
    - La base de datos debe existir en tu servidor local
    - Ideal para desarrollo y testing
-*************************************************************** *
+*************************************************************** */
 
 $servername = "localhost"; // Servidor local por defecto
 $username = "root";        // Usuario root común en entornos locales
@@ -36,7 +36,7 @@ if ($conn->connect_error) {
 /*
 
 ***************************************************************
-   CONFIGURACIÓN PARA PRODUCCIÓN (INFINITE FREE)
+   CONFIGURACIÓN PARA PRUEBAS (INFINITE FREE)
    Notas para mantenimiento:
    - Esta sección está comentada para trabajar en local
    - Al subir a producción:
@@ -44,7 +44,7 @@ if ($conn->connect_error) {
      2. Descomentar este bloque
      3. Verificar que las credenciales sean las correctas para tu hosting
    - Nunca subir credenciales a repositorios públicos
-*************************************************************** */
+*************************************************************** *
 
 // Configuración para Infinite Free
 $servername = "sql302.infinityfree.com"; // Servidor proporcionado por el hosting
@@ -62,7 +62,7 @@ if ($conn->connect_error) {
 }
 
 /***************************************************************
-   CONFIGURACIÓN PARA PRUEBAS (INFINITE FREE)
+   CONFIGURACIÓN PARA PRODUCCIÓN (INFINITE FREE)
    Notas para mantenimiento:
    - Esta sección está comentada para trabajar en local
    - Al subir a producción:
