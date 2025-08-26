@@ -55,6 +55,23 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['delete_operation'])) {
 
     $numero_operacion = intval($_POST['numero_operacion']);
 
+    // Verificar si la operación está tramitada
+    $sql_tramitado = "SELECT tramitado FROM caja_panaderia WHERE numero_operacion = ?";
+    $stmt_tramitado = $conn->prepare($sql_tramitado);
+    $stmt_tramitado->bind_param("i", $numero_operacion);
+    $stmt_tramitado->execute();
+    $result_tramitado = $stmt_tramitado->get_result();
+
+    if ($result_tramitado->num_rows > 0) {
+        $operacion = $result_tramitado->fetch_assoc();
+        if ($operacion['tramitado'] == 1) {
+            $_SESSION['error_msg'] = "⚠️ No se puede eliminar una operación tramitada";
+            header("Location: caja_panaderia_operaciones.php");
+            exit();
+        }
+    }
+    $stmt_tramitado->close();
+
     // Iniciar transacción
     $conn->begin_transaction();
 
@@ -122,6 +139,24 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['edit_operation'])) {
     }
 
     $numero_operacion = intval($_POST['numero_operacion']);
+
+    // Verificar si la operación está tramitada
+    $sql_tramitado = "SELECT tramitado FROM caja_panaderia WHERE numero_operacion = ?";
+    $stmt_tramitado = $conn->prepare($sql_tramitado);
+    $stmt_tramitado->bind_param("i", $numero_operacion);
+    $stmt_tramitado->execute();
+    $result_tramitado = $stmt_tramitado->get_result();
+
+    if ($result_tramitado->num_rows > 0) {
+        $operacion = $result_tramitado->fetch_assoc();
+        if ($operacion['tramitado'] == 1) {
+            $_SESSION['error_msg'] = "⚠️ No se puede editar una operación tramitada";
+            header("Location: caja_panaderia_operaciones.php");
+            exit();
+        }
+    }
+    $stmt_tramitado->close();
+
     $nuevo_desde_para = intval($_POST['desde_para']);
     $nueva_entrada = floatval($_POST['entrada']);
     $nueva_salida = floatval($_POST['salida']);
@@ -256,15 +291,32 @@ if (isset($_GET['editar'])) {
     $result_relacionada = $stmt_relacionada->get_result();
 
     if ($result_relacionada->num_rows == 0) {
-        $sql_editar = "SELECT * FROM caja_panaderia WHERE numero_operacion = ?";
-        $stmt_editar = $conn->prepare($sql_editar);
-        $stmt_editar->bind_param("i", $numero_operacion);
-        $stmt_editar->execute();
-        $result_editar = $stmt_editar->get_result();
-        if ($result_editar->num_rows > 0) {
-            $operacion_editar = $result_editar->fetch_assoc();
+        // Verificar si la operación está tramitada
+        $sql_tramitado = "SELECT tramitado FROM caja_panaderia WHERE numero_operacion = ?";
+        $stmt_tramitado = $conn->prepare($sql_tramitado);
+        $stmt_tramitado->bind_param("i", $numero_operacion);
+        $stmt_tramitado->execute();
+        $result_tramitado = $stmt_tramitado->get_result();
+
+        if ($result_tramitado->num_rows > 0) {
+            $operacion = $result_tramitado->fetch_assoc();
+            if ($operacion['tramitado'] == 0) {
+                $sql_editar = "SELECT * FROM caja_panaderia WHERE numero_operacion = ?";
+                $stmt_editar = $conn->prepare($sql_editar);
+                $stmt_editar->bind_param("i", $numero_operacion);
+                $stmt_editar->execute();
+                $result_editar = $stmt_editar->get_result();
+                if ($result_editar->num_rows > 0) {
+                    $operacion_editar = $result_editar->fetch_assoc();
+                }
+                $stmt_editar->close();
+            } else {
+                $_SESSION['error_msg'] = "⚠️ No se puede editar una operación tramitada";
+                header("Location: caja_panaderia_operaciones.php");
+                exit();
+            }
         }
-        $stmt_editar->close();
+        $stmt_tramitado->close();
     } else {
         $_SESSION['error_msg'] = "⚠️ No se puede editar una operación relacionada con la caja principal";
         header("Location: caja_panaderia_operaciones.php");
@@ -298,7 +350,6 @@ ob_end_flush();
     <?php endif; ?>
 
     <!-- Tabla de operaciones -->
-    <!-- Tabla de operaciones -->
     <table class="table">
         <thead>
             <tr>
@@ -309,6 +360,7 @@ ob_end_flush();
                 <th>Saldo</th>
                 <th>Centro de Costo</th>
                 <th>Observaciones</th>
+                <th>Tramitado</th>
                 <?php if ($tiene_permiso_editar): ?>
                     <th>Acciones</th>
                 <?php endif; ?>
@@ -328,10 +380,13 @@ ob_end_flush();
                     <td data-label="Saldo"><?= number_format($row['saldo'], 2) ?></td>
                     <td data-label="Centro costo"><?= htmlspecialchars($row['centro_nombre']) ?></td>
                     <td data-label="Observaciones"><?= htmlspecialchars($row['observaciones']) ?></td>
+                    <td data-label="Tramitado">
+                        <?= $row['tramitado'] ? '✅ Sí' : '❌ No' ?>
+                    </td>
                     <?php if ($tiene_permiso_editar): ?>
                         <td class="actions-cell">
                             <div class="table-action-buttons">
-                                <?php if (!$row['relacionada']): ?>
+                                <?php if (!$row['relacionada'] && $row['tramitado'] == 0): ?>
                                     <button onclick="showEditForm(<?= $row['numero_operacion'] ?>)" class="btn-preview">Editar</button>
                                     <form method="POST" action="caja_panaderia_operaciones.php" style="display: inline;">
                                         <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
@@ -340,7 +395,7 @@ ob_end_flush();
                                         <button type="submit" class="btn-preview" onclick="return confirm('¿Estás seguro de eliminar esta operación?')">Eliminar</button>
                                     </form>
                                 <?php else: ?>
-                                    <span class="text-muted">Operación bloqueada</span>
+                                    <span class="text-muted">Operación <?= $row['relacionada'] ? 'relacionada' : 'tramitada' ?></span>
                                 <?php endif; ?>
                             </div>
                         </td>
@@ -462,5 +517,21 @@ ob_end_flush();
         }
     });
 </script>
+
+<style>
+    .text-muted {
+        color: #6c757d;
+        font-style: italic;
+    }
+
+    .badge {
+        background-color: #6c757d;
+        color: white;
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-size: 0.8em;
+        margin-left: 5px;
+    }
+</style>
 
 <?php include('../../templates/footer.php'); ?>

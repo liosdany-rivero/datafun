@@ -10,6 +10,7 @@ ob_start();
  * - Edición de operaciones existentes
  * - Eliminación de operaciones existentes
  * - Sincronización con cajas secundarias (Panadería, Trinidad, Galletera, Cochiquera)
+ * - Restricción de edición/eliminación para operaciones tramitadas
  */
 
 // SECCIÓN 1: INCLUSIONES Y CONFIGURACIÓN
@@ -53,6 +54,27 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['delete_operation'])) {
     }
 
     $numero_operacion = intval($_POST['numero_operacion']);
+
+    // Verificar si la operación está tramitada antes de proceder
+    $sql_tramitado = "SELECT IF(cp.entrada > 0, cpe.tramitado, cps.tramitado) AS tramitado
+                     FROM caja_principal cp
+                     LEFT JOIN caja_principal_entradas cpe ON cp.numero_operacion = cpe.numero_operacion AND cp.entrada > 0
+                     LEFT JOIN caja_principal_salidas cps ON cp.numero_operacion = cps.numero_operacion AND cp.salida > 0
+                     WHERE cp.numero_operacion = ?";
+    $stmt_tramitado = $conn->prepare($sql_tramitado);
+    $stmt_tramitado->bind_param("i", $numero_operacion);
+    $stmt_tramitado->execute();
+    $result_tramitado = $stmt_tramitado->get_result();
+    
+    if ($result_tramitado->num_rows > 0) {
+        $tramitado = $result_tramitado->fetch_assoc()['tramitado'];
+        if ($tramitado == 1) {
+            $_SESSION['error_msg'] = "⚠️ No se puede eliminar una operación ya tramitada";
+            header("Location: caja_principal_operaciones.php");
+            exit();
+        }
+    }
+    $stmt_tramitado->close();
 
     // Iniciar transacción
     $conn->begin_transaction();
@@ -234,6 +256,27 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['save_edit'])) {
     $numero_operacion = intval($_POST['numero_operacion']);
     $tipo_operacion = $_POST['tipo_operacion'] === 'entrada' ? 'entrada' : 'salida';
     $observaciones = $_POST['observaciones'];
+
+    // Verificar si la operación está tramitada antes de proceder
+    $sql_tramitado = "SELECT IF(cp.entrada > 0, cpe.tramitado, cps.tramitado) AS tramitado
+                     FROM caja_principal cp
+                     LEFT JOIN caja_principal_entradas cpe ON cp.numero_operacion = cpe.numero_operacion AND cp.entrada > 0
+                     LEFT JOIN caja_principal_salidas cps ON cp.numero_operacion = cps.numero_operacion AND cp.salida > 0
+                     WHERE cp.numero_operacion = ?";
+    $stmt_tramitado = $conn->prepare($sql_tramitado);
+    $stmt_tramitado->bind_param("i", $numero_operacion);
+    $stmt_tramitado->execute();
+    $result_tramitado = $stmt_tramitado->get_result();
+    
+    if ($result_tramitado->num_rows > 0) {
+        $tramitado = $result_tramitado->fetch_assoc()['tramitado'];
+        if ($tramitado == 1) {
+            $_SESSION['error_msg'] = "⚠️ No se puede editar una operación ya tramitada";
+            header("Location: caja_principal_operaciones.php");
+            exit();
+        }
+    }
+    $stmt_tramitado->close();
 
     // Iniciar transacción
     $conn->begin_transaction();
@@ -513,14 +556,15 @@ $total_paginas = max(1, ceil($total_registros / $por_pagina));
 $pagina_actual = isset($_GET['pagina']) ? max(1, intval($_GET['pagina'])) : 1;
 $inicio = ($pagina_actual - 1) * $por_pagina;
 
-// Consulta paginada con información adicional
+// Consulta paginada con información adicional incluyendo tramitado
 $operaciones = [];
 $sql = "SELECT cp.*, 
                IF(cp.entrada > 0, cpe.tipo_entrada, cps.tipo_salida) AS tipo_operacion,
                IF(cp.entrada > 0, cpe.centro_costo_codigo, cps.centro_costo_codigo) AS centro_costo,
                IF(cp.entrada > 0, cpe.fecha_documento, NULL) AS fecha_documento,
                IF(cp.entrada > 0, cpe.cantidad, NULL) AS cantidad,
-               IF(cp.entrada > 0, cpe.observaciones, cps.observaciones) AS detalle_observaciones
+               IF(cp.entrada > 0, cpe.observaciones, cps.observaciones) AS detalle_observaciones,
+               IF(cp.entrada > 0, cpe.tramitado, cps.tramitado) AS tramitado
         FROM caja_principal cp
         LEFT JOIN caja_principal_entradas cpe ON cp.numero_operacion = cpe.numero_operacion AND cp.entrada > 0
         LEFT JOIN caja_principal_salidas cps ON cp.numero_operacion = cps.numero_operacion AND cp.salida > 0
@@ -540,7 +584,8 @@ if (isset($_GET['editar']) && $tiene_permiso_editar) {
                           IF(cp.entrada > 0, cpe.centro_costo_codigo, cps.centro_costo_codigo) AS centro_costo,
                           IF(cp.entrada > 0, cpe.fecha_documento, NULL) AS fecha_documento,
                           IF(cp.entrada > 0, cpe.cantidad, NULL) AS cantidad,
-                          IF(cp.entrada > 0, cpe.observaciones, cps.observaciones) AS detalle_observaciones
+                          IF(cp.entrada > 0, cpe.observaciones, cps.observaciones) AS detalle_observaciones,
+                          IF(cp.entrada > 0, cpe.tramitado, cps.tramitado) AS tramitado
                    FROM caja_principal cp
                    LEFT JOIN caja_principal_entradas cpe ON cp.numero_operacion = cpe.numero_operacion AND cp.entrada > 0
                    LEFT JOIN caja_principal_salidas cps ON cp.numero_operacion = cps.numero_operacion AND cp.salida > 0
@@ -551,12 +596,16 @@ if (isset($_GET['editar']) && $tiene_permiso_editar) {
     $result_editar = $stmt_editar->get_result();
     if ($result_editar->num_rows > 0) {
         $operacion_editar = $result_editar->fetch_assoc();
+        
+        // Verificar si está tramitado
+        if ($operacion_editar['tramitado'] == 1) {
+            $_SESSION['error_msg'] = "⚠️ No se puede editar una operación ya tramitada";
+            header("Location: caja_principal_operaciones.php");
+            exit();
+        }
     }
     $stmt_editar->close();
 }
-
-
-
 
 ob_end_flush();
 ?>
@@ -593,6 +642,7 @@ ob_end_flush();
                 <th>Entrada</th>
                 <th>Salida</th>
                 <th>Saldo</th>
+                <th>Tramitado</th>
                 <th>Acciones</th>
             </tr>
         </thead>
@@ -606,21 +656,25 @@ ob_end_flush();
                     <td data-label="Entrada"><?= number_format($row['entrada'], 2) ?></td>
                     <td data-label="Salida"><?= number_format($row['salida'], 2) ?></td>
                     <td data-label="Saldo"><?= number_format($row['saldo'], 2) ?></td>
+                    <td data-label="Tramitado">
+                        <?= $row['tramitado'] == 1 ? '✅ Si' : '❌ No' ?>
+                    </td>
                     <td>
                         <div class="table-action-buttons">
                             <a href="caja_principal_detalles.php?numero=<?= $row['numero_operacion'] ?>&from=operaciones" class="btn-preview">Detalles</a>
                             <?php if ($tiene_permiso_editar): ?>
-                                <a href="?editar=<?= $row['numero_operacion'] ?>" class="btn-preview">Editar</a>
-
-                                <form method="POST" action="caja_principal_operaciones.php" style="display: inline;">
-                                    <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
-                                    <input type="hidden" name="delete_operation" value="1">
-                                    <input type="hidden" name="numero_operacion" value="<?= $row['numero_operacion'] ?>">
-                                    <button type="submit" class="btn-preview" onclick="return confirm('¿Está seguro de eliminar esta operación?')">Eliminar</button>
-                                </form>
-
-
-
+                                <?php if ($row['tramitado'] == 0): ?>
+                                    <a href="?editar=<?= $row['numero_operacion'] ?>" class="btn-preview">Editar</a>
+                                    <form method="POST" action="caja_principal_operaciones.php" style="display: inline;">
+                                        <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
+                                        <input type="hidden" name="delete_operation" value="1">
+                                        <input type="hidden" name="numero_operacion" value="<?= $row['numero_operacion'] ?>">
+                                        <button type="submit" class="btn-preview" onclick="return confirm('¿Está seguro de eliminar esta operación?')">Eliminar</button>
+                                    </form>
+                                <?php else: ?>
+                                    <span class="btn-preview disabled" title="Operación tramitada - No editable">Editar</span>
+                                    <span class="btn-preview disabled" title="Operación tramitada - No eliminable">Eliminar</span>
+                                <?php endif; ?>
                             <?php endif; ?>
                         </div>
                     </td>
@@ -700,9 +754,6 @@ ob_end_flush();
                 <label for="observaciones">Observaciones:</label>
                 <textarea id="observaciones" name="observaciones" maxlength="255"><?= htmlspecialchars($operacion_editar['detalle_observaciones']) ?></textarea>
 
-
-
-
                 <div style="display: flex; gap: 10px; margin-top: 20px;">
                     <button type="submit" class="btn-primary">Guardar cambios</button>
                     <a href="caja_principal_operaciones.php" class="btn-primary">Cancelar</a>
@@ -778,7 +829,6 @@ ob_end_flush();
         </div>
     <?php endif; ?>
 
-
     <!-- SECCIÓN 5: JAVASCRIPT PARA INTERACCIÓN -->
     <script>
         /**
@@ -836,4 +886,13 @@ ob_end_flush();
         });
     </script>
 
-    <?php include('../../templates/footer.php'); ?>
+    <style>
+        .btn-preview.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background-color: #ccc;
+            border-color: #999;
+        }
+    </style>
+
+<?php include('../../templates/footer.php'); ?>
