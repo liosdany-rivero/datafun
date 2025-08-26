@@ -16,5 +16,3 @@ DataFun busca eliminar la fragmentación entre departamentos, automatizar proces
 - **Backend**: PHP + MySQL (estructura modular)
 - **Automatización**: Bash scripts para instalación y mantenimiento
 - **Compatibilidad**: Linux, Android (Termux), integración con GitHub
-
-
