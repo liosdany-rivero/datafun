@@ -602,7 +602,7 @@ ob_end_flush();
                     <td data-label="N° Operación"><?= htmlspecialchars($row['numero_operacion']) ?></td>
                     <td data-label="Fecha"><?= htmlspecialchars($row['fecha_operacion']) ?></td>
                     <td data-label="Tipo"><?= htmlspecialchars($row['tipo_operacion'] ?? 'N/A') ?></td>
-                    <td data-label="Centro costo"><?= htmlspecialchars($row['centro_costo'] ?? 'N/A') ?></td>
+                    <td data-label="Centro Costo"><?= htmlspecialchars($row['centro_costo'] ?? 'N/A') ?></td>
                     <td data-label="Entrada"><?= number_format($row['entrada'], 2) ?></td>
                     <td data-label="Salida"><?= number_format($row['salida'], 2) ?></td>
                     <td data-label="Saldo"><?= number_format($row['saldo'], 2) ?></td>
