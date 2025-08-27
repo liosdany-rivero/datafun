@@ -38,6 +38,8 @@ $permisoCajaPrincipal = '';
 $mostrarFlujoCajaPrincipal = false;
 $permisoPanaderia = '';
 $tienePermisosCajas = false;
+$tienePermisosCatalogos = false;
+$tienePermisosAlmacenes = false;
 $permisosCentros = []; // Nuevo array para almacenar permisos por centro de costo
 
 // Lógica de caché (versión optimizada)
@@ -51,6 +53,8 @@ if (isset($_SESSION['user_id'])) {
         $mostrarFlujoCajaPrincipal = $_SESSION['permisos_cache']['mostrarFlujoCajaPrincipal'];
         $permisoPanaderia = $_SESSION['permisos_cache']['permisoPanaderia'];
         $tienePermisosCajas = $_SESSION['permisos_cache']['tienePermisosCajas'];
+        $tienePermisosCatalogos = $_SESSION['permisos_cache']['tienePermisosCatalogos'];
+        $tienePermisosAlmacenes = $_SESSION['permisos_cache']['tienePermisosAlmacenes'];
         $permisosCentros = $_SESSION['permisos_cache']['permisosCentros'];
     } else {
         // Regenerar caché
@@ -84,12 +88,21 @@ if (isset($_SESSION['user_id'])) {
         $tienePermisosCajas = ($result->fetch_assoc()['total'] > 0);
         $stmt->close();
 
+        // Establecer permisos de catalogos y almacenes
+        if (isset($permisosCentros[700])) {
+            $tienePermisosCatalogos = true;
+            $tienePermisosAlmacenes = true;
+        }
+
+
         // Actualizar caché
         $_SESSION['permisos_cache'] = [
             'permisoCajaPrincipal' => $permisoCajaPrincipal,
             'mostrarFlujoCajaPrincipal' => $mostrarFlujoCajaPrincipal,
             'permisoPanaderia' => $permisoPanaderia,
             'tienePermisosCajas' => $tienePermisosCajas,
+            'tienePermisosCatalogos' => $tienePermisosCatalogos,
+            'tienePermisosAlmacenes' => $tienePermisosAlmacenes,
             'permisosCentros' => $permisosCentros,
             'timestamp' => time()
         ];
@@ -144,8 +157,15 @@ if (isset($_SESSION['user_id'])) {
                             </ul>
                         </li>
                     <?php endif; ?>
-
-                    <?php if (isset($permisosCentros[1])): // Caja Trinidad 
+                    <?php if ($tienePermisosCatalogos): ?>
+                        <li class="menu-item-has-children">
+                            <a href="javascript:void(0)">Catálogos</a>
+                            <ul class="sub-menu">
+                                <li><a href="../catalogo/productos.php">Productos</a></li>
+                            </ul>
+                        </li>
+                    <?php endif; ?>
+                    <?php if (isset($permisosCentros[1])): // Tasas
                     ?>
                         <li class="menu-item-has-children">
                             <a href="javascript:void(0)">Tasas</a>
