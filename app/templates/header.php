@@ -174,7 +174,14 @@ if (isset($_SESSION['user_id'])) {
                             </ul>
                         </li>
                     <?php endif; ?>
-
+                    <?php if ($tienePermisosAlmacenes): ?>
+                        <li class="menu-item-has-children">
+                            <a href="javascript:void(0)">Almacenes</a>
+                            <ul class="sub-menu">
+                                <li><a href="../almacen/almacen_canal_inventario_usd.php">Almacen Canal USD</a></li>
+                            </ul>
+                        </li>
+                    <?php endif; ?>
                     <!-- CAJAS -->
                     <?php if ($tienePermisosCajas): ?>
                         <li class="menu-item-has-children">
