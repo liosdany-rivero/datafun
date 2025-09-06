@@ -21,7 +21,143 @@ $producto_id = isset($_GET['producto']) ? (int)$_GET['producto'] : 0;
 
 // SECCIÓN 2: PROCESAMIENTO DE FORMULARIOS
 
-// 2.1 Creación de entrada/salida en tarjeta de estiba
+// 2.1 Eliminación de registro y actualización de saldos
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['eliminar_registro'])) {
+    // Validación CSRF
+    if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
+        die("Token CSRF inválido");
+    }
+
+    $numero_operacion = (int)$_POST['numero_operacion'];
+    $producto = (int)$_POST['producto'];
+
+    try {
+        // Iniciar transacción
+        $conn->begin_transaction();
+
+        // Obtener el registro a eliminar
+        $sql_select = "SELECT * FROM almacen_canal_tarjetas_estiba_usd 
+                      WHERE numero_operacion = ? AND producto = ?";
+        $stmt_select = $conn->prepare($sql_select);
+        $stmt_select->bind_param("ii", $numero_operacion, $producto);
+        $stmt_select->execute();
+        $registro_eliminar = $stmt_select->get_result()->fetch_assoc();
+        $stmt_select->close();
+
+        if (!$registro_eliminar) {
+            throw new Exception("Registro no encontrado");
+        }
+
+        // Eliminar el registro
+        $sql_delete = "DELETE FROM almacen_canal_tarjetas_estiba_usd 
+                      WHERE numero_operacion = ? AND producto = ?";
+        $stmt_delete = $conn->prepare($sql_delete);
+        $stmt_delete->bind_param("ii", $numero_operacion, $producto);
+
+        if (!$stmt_delete->execute()) {
+            throw new Exception("Error al eliminar registro: " . $stmt_delete->error);
+        }
+        $stmt_delete->close();
+
+        // Obtener todos los registros posteriores al número de operación eliminado
+        $sql_posteriores = "SELECT numero_operacion, tipo_movimiento, cantidad_fisica, valor_usd 
+                           FROM almacen_canal_tarjetas_estiba_usd 
+                           WHERE producto = ? AND numero_operacion > ?
+                           ORDER BY numero_operacion ASC";
+        $stmt_posteriores = $conn->prepare($sql_posteriores);
+        $stmt_posteriores->bind_param("ii", $producto, $numero_operacion);
+        $stmt_posteriores->execute();
+        $result_posteriores = $stmt_posteriores->get_result();
+        $stmt_posteriores->close();
+
+        // Obtener el saldo anterior al registro eliminado
+        $sql_anterior = "SELECT saldo_fisico, saldo_usd 
+                        FROM almacen_canal_tarjetas_estiba_usd 
+                        WHERE producto = ? AND numero_operacion < ?
+                        ORDER BY numero_operacion DESC 
+                        LIMIT 1";
+        $stmt_anterior = $conn->prepare($sql_anterior);
+        $stmt_anterior->bind_param("ii", $producto, $numero_operacion);
+        $stmt_anterior->execute();
+        $result_anterior = $stmt_anterior->get_result();
+
+        // Si hay registro anterior, usar sus saldos como base
+        if ($result_anterior->num_rows > 0) {
+            $saldo_base = $result_anterior->fetch_assoc();
+            $saldo_fisico_actual = $saldo_base['saldo_fisico'];
+            $saldo_usd_actual = $saldo_base['saldo_usd'];
+        } else {
+            // Si no hay registros anteriores, empezar desde cero
+            $saldo_fisico_actual = 0;
+            $saldo_usd_actual = 0;
+        }
+        $stmt_anterior->close();
+
+        // Recalcular saldos para todos los registros posteriores
+        while ($registro = $result_posteriores->fetch_assoc()) {
+            if ($registro['tipo_movimiento'] === 'entrada') {
+                $saldo_fisico_actual += $registro['cantidad_fisica'];
+                $saldo_usd_actual += $registro['valor_usd'];
+            } else {
+                $saldo_fisico_actual -= $registro['cantidad_fisica'];
+                $saldo_usd_actual -= $registro['valor_usd'];
+            }
+
+            // Aplicar redondeo para mantener precisión
+            $saldo_fisico_actual = round($saldo_fisico_actual, 3);
+            $saldo_usd_actual = round($saldo_usd_actual, 2);
+
+            // Actualizar el registro con los nuevos saldos
+            $sql_update = "UPDATE almacen_canal_tarjetas_estiba_usd 
+                          SET saldo_fisico = ?, saldo_usd = ? 
+                          WHERE numero_operacion = ? AND producto = ?";
+            $stmt_update = $conn->prepare($sql_update);
+            $stmt_update->bind_param(
+                "ddii",
+                $saldo_fisico_actual,
+                $saldo_usd_actual,
+                $registro['numero_operacion'],
+                $producto
+            );
+
+            if (!$stmt_update->execute()) {
+                throw new Exception("Error al actualizar saldos: " . $stmt_update->error);
+            }
+            $stmt_update->close();
+        }
+
+        // Actualizar el inventario con el último saldo
+        $sql_inv = "INSERT INTO almacen_canal_inventario_usd 
+                   (producto, saldo_fisico, valor_usd, fecha_operacion) 
+                   VALUES (?, ?, ?, CURDATE())
+                   ON DUPLICATE KEY UPDATE 
+                   saldo_fisico = VALUES(saldo_fisico), 
+                   valor_usd = VALUES(valor_usd), 
+                   fecha_operacion = VALUES(fecha_operacion)";
+
+        $stmt_inv = $conn->prepare($sql_inv);
+        $stmt_inv->bind_param("idd", $producto, $saldo_fisico_actual, $saldo_usd_actual);
+
+        if (!$stmt_inv->execute()) {
+            throw new Exception("Error al actualizar inventario: " . $stmt_inv->error);
+        }
+        $stmt_inv->close();
+
+        $conn->commit();
+        $_SESSION['success_msg'] = "✅ Registro eliminado correctamente. Saldos actualizados.";
+    } catch (Exception $e) {
+        $conn->rollback();
+        $_SESSION['error_msg'] = "⚠️ " . $e->getMessage();
+    }
+
+    // Regenerar token y redirigir
+    unset($_SESSION['csrf_token']);
+    ob_clean();
+    header("Location: almacen_canal_tarjetas_estiba_usd.php?producto=$producto");
+    exit();
+}
+
+// 2.2 Creación de entrada/salida en tarjeta de estiba
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && (isset($_POST['save_entrada']) || isset($_POST['save_salida']))) {
     // Validación CSRF
     if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
@@ -51,6 +187,20 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && (isset($_POST['save_entrada']) || is
         header("Location: almacen_canal_tarjetas_estiba_usd.php?producto=$producto_id");
         exit();
     }
+
+    // Validar que existe tasa para la fecha seleccionada
+    $sql_tasa = "SELECT tasa FROM tasas WHERE fecha = ?";
+    $stmt_tasa = $conn->prepare($sql_tasa);
+    $stmt_tasa->bind_param("s", $fecha);
+    $stmt_tasa->execute();
+    $result_tasa = $stmt_tasa->get_result();
+
+    if ($result_tasa->num_rows === 0) {
+        $_SESSION['error_msg'] = "⚠️ No existe una tasa definida para la fecha seleccionada";
+        header("Location: almacen_canal_tarjetas_estiba_usd.php?producto=$producto_id");
+        exit();
+    }
+    $stmt_tasa->close();
 
     if (empty($cantidad_fisica) || $cantidad_fisica <= 0) {
         $_SESSION['error_msg'] = "⚠️ La cantidad física debe ser mayor a 0";
@@ -85,13 +235,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && (isset($_POST['save_entrada']) || is
         $ultimo_saldo = $result_saldo->fetch_assoc();
         $stmt_saldo->close();
 
-        // Calcular nuevos saldos
+        // Calcular nuevos saldos con precisión decimal
         if ($tipo_movimiento === 'entrada') {
-            $nuevo_saldo_fisico = ($ultimo_saldo['saldo_fisico'] ?? 0) + $cantidad_fisica;
-            $nuevo_saldo_usd = ($ultimo_saldo['valor_usd'] ?? 0) + $valor_usd;
+            $nuevo_saldo_fisico = round(($ultimo_saldo['saldo_fisico'] ?? 0) + $cantidad_fisica, 3);
+            $nuevo_saldo_usd = round(($ultimo_saldo['valor_usd'] ?? 0) + $valor_usd, 2);
         } else {
-            $nuevo_saldo_fisico = ($ultimo_saldo['saldo_fisico'] ?? 0) - $cantidad_fisica;
-            $nuevo_saldo_usd = ($ultimo_saldo['valor_usd'] ?? 0) - $valor_usd;
+            $nuevo_saldo_fisico = round(($ultimo_saldo['saldo_fisico'] ?? 0) - $cantidad_fisica, 3);
+            $nuevo_saldo_usd = round(($ultimo_saldo['valor_usd'] ?? 0) - $valor_usd, 2);
 
             // Validar que no haya saldos negativos
             if ($nuevo_saldo_fisico < 0) {
@@ -103,14 +253,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && (isset($_POST['save_entrada']) || is
             }
         }
 
-        // Insertar en tarjeta de estiba
+        // Insertar en tarjeta de estiba (sin los campos CUP que no existen en la tabla)
         $sql = "INSERT INTO almacen_canal_tarjetas_estiba_usd 
                (producto, fecha, tipo_movimiento, cantidad_fisica, valor_usd, saldo_fisico, saldo_usd, desde_para, observaciones) 
                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         $stmt = $conn->prepare($sql);
         $stmt->bind_param(
-            "issdddiis",
+            "issddddds", // Changed from "issdddis" to "issdddiis"
             $producto,
             $fecha,
             $tipo_movimiento,
@@ -165,8 +315,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && (isset($_POST['save_entrada']) || is
     exit();
 }
 
-// 2.2 Cerrar tarjeta de estiba (actualizar inventario con el último saldo)
-if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['cerrar_tarjeta'])) {
+// 2.3 Cerrar tarjeta de estiba automáticamente al volver a inventarios
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['volver_inventarios'])) {
     if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
         die("Token CSRF inválido");
     }
@@ -178,7 +328,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['cerrar_tarjeta'])) {
         $sql_ultimo = "SELECT saldo_fisico, saldo_usd, fecha 
                       FROM almacen_canal_tarjetas_estiba_usd 
                       WHERE producto = ? 
-                      ORDER BY fecha DESC, numero_operacion DESC 
+                      ORDER BY numero_operacion DESC 
                       LIMIT 1";
         $stmt_ultimo = $conn->prepare($sql_ultimo);
         $stmt_ultimo->bind_param("i", $producto);
@@ -212,17 +362,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['cerrar_tarjeta'])) {
                 throw new Exception("Error al actualizar inventario: " . $stmt_inv->error);
             }
             $stmt_inv->close();
-        } else {
-            $_SESSION['error_msg'] = "⚠️ No hay movimientos para cerrar la tarjeta de estiba.";
         }
     } catch (Exception $e) {
         $_SESSION['error_msg'] = "⚠️ " . $e->getMessage();
     }
 
-    // Regenerar token y redirigir
+    // Regenerar token y redirigir a inventarios
     unset($_SESSION['csrf_token']);
     ob_clean();
-    header("Location: almacen_canal_tarjetas_estiba_usd.php?producto=$producto");
+    header("Location: almacen_canal_inventario_usd.php");
     exit();
 }
 
@@ -242,9 +390,9 @@ if ($producto_id > 0) {
     }
 }
 
-// Obtener lista de centros de costo para el select
+// Obtener lista de centros de costo para el select (solo aquellos con E_A_Canal_USD = 1)
 $centros_costo = [];
-$sql_centros = "SELECT codigo, nombre FROM centros_costo ORDER BY nombre";
+$sql_centros = "SELECT codigo, nombre FROM centros_costo WHERE E_A_Canal_USD = 1 ORDER BY nombre";
 $result_centros = mysqli_query($conn, $sql_centros);
 while ($row = mysqli_fetch_assoc($result_centros)) {
     $centros_costo[$row['codigo']] = $row['nombre'];
@@ -280,12 +428,20 @@ if ($producto_id > 0) {
             LEFT JOIN productos p ON t.producto = p.codigo 
             LEFT JOIN centros_costo c ON t.desde_para = c.codigo 
             WHERE t.producto = $producto_id 
-            ORDER BY t.fecha DESC, t.numero_operacion DESC 
+            ORDER BY t.numero_operacion DESC 
             LIMIT $inicio, $por_pagina";
     $result = mysqli_query($conn, $sql);
     while ($row = mysqli_fetch_assoc($result)) {
         $movimientos[] = $row;
     }
+}
+
+// Obtener fechas disponibles con tasas para el input date
+$fechas_con_tasa = [];
+$sql_fechas = "SELECT fecha FROM tasas ORDER BY fecha DESC";
+$result_fechas = mysqli_query($conn, $sql_fechas);
+while ($row = mysqli_fetch_assoc($result_fechas)) {
+    $fechas_con_tasa[] = $row['fecha'];
 }
 ob_end_flush();
 ?>
@@ -294,21 +450,9 @@ ob_end_flush();
 
 <!-- Contenedor principal -->
 <div class="form-container">
-    <h2>Tarjetas de Estiba USD - <?= $producto_id > 0 ? htmlspecialchars($producto_nombre) : 'Seleccione un Producto' ?></h2>
+    <h2>Tarjetas de Estiba USD - <?= $producto_id > 0 ? htmlspecialchars($producto_nombre) . "(" . htmlspecialchars($producto_um) . ")  " : 'Seleccione un Producto' ?></h2>
 
     <?php if ($producto_id > 0): ?>
-        <!-- Mostrar saldo actual -->
-        <div class="saldo-info">
-            <h3>Saldo Actual</h3>
-            <p>Físico: <strong><?= number_format($saldo_actual['saldo_fisico'], 3) ?> <?= htmlspecialchars($producto_um) ?></strong></p>
-            <p>Valor USD: <strong>$<?= number_format($saldo_actual['valor_usd'], 2) ?></strong></p>
-        </div>
-
-        <!-- Mostrar producto seleccionado (solo lectura) -->
-        <div class="product-selector">
-            <label for="producto_display">Producto Seleccionado:</label>
-            <input type="text" id="producto_display" value="<?= htmlspecialchars($producto_nombre) ?> (<?= htmlspecialchars($producto_um) ?>)" readonly>
-        </div>
     <?php else: ?>
         <!-- Si no hay producto seleccionado, mostrar mensaje y botón para volver -->
         <div class="alert alert-info">
@@ -331,6 +475,7 @@ ob_end_flush();
                     <th>Saldo USD</th>
                     <th>Centro Costo</th>
                     <th>Observaciones</th>
+                    <th>Acciones</th>
                 </tr>
             </thead>
             <tbody>
@@ -345,6 +490,15 @@ ob_end_flush();
                         <td data-label="Saldo USD">$<?= number_format($row['saldo_usd'], 2) ?></td>
                         <td data-label="Centro Costo"><?= htmlspecialchars($row['centro_nombre']) ?></td>
                         <td data-label="Observaciones"><?= htmlspecialchars($row['observaciones']) ?></td>
+                        <td data-label="Acciones">
+                            <form method="POST" action="almacen_canal_tarjetas_estiba_usd.php?producto=<?= $producto_id ?>"
+                                class="delete-form" onsubmit="return confirmarEliminacion(this)">
+                                <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
+                                <input type="hidden" name="numero_operacion" value="<?= $row['numero_operacion'] ?>">
+                                <input type="hidden" name="producto" value="<?= $producto_id ?>">
+                                <button type="submit" name="eliminar_registro" class="btn-danger btn-small">Eliminar</button>
+                            </form>
+                        </td>
                     </tr>
                 <?php endforeach; ?>
             </tbody>
@@ -396,15 +550,35 @@ ob_end_flush();
         <!-- Formulario Entrada -->
         <div id="entradaFormContainer" class="sub-form" style="display: none;">
             <h3>Registrar Entrada</h3>
-            <form method="POST" action="almacen_canal_tarjetas_estiba_usd.php?producto=<?= $producto_id ?>">
+            <form method="POST" action="almacen_canal_tarjetas_estiba_usd.php?producto=<?= $producto_id ?>" id="entradaForm">
                 <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
                 <input type="hidden" name="producto" value="<?= $producto_id ?>">
 
                 <label for="fecha_entrada">Fecha:</label>
-                <input type="date" id="fecha_entrada" name="fecha" required />
+                <input type="date" id="fecha_entrada" name="fecha" required
+                    onchange="validarFechaConTasa(this.value)" />
+                <datalist id="fechas_con_tasa">
+                    <?php foreach ($fechas_con_tasa as $fecha): ?>
+                        <option value="<?= $fecha ?>">
+                        <?php endforeach; ?>
+                </datalist>
+                <div id="fecha_error" style="color: red; display: none;">No existe tasa para esta fecha</div>
 
                 <label for="cantidad_fisica_entrada">Cantidad Física (<?= htmlspecialchars($producto_um) ?>):</label>
                 <input type="number" id="cantidad_fisica_entrada" name="cantidad_fisica" step="0.001" min="0.001" required />
+
+                <div style="margin: 15px 0; display: flex; align-items: center;">
+                    <input type="checkbox" id="entrada_cup" name="entrada_cup" value="1" onchange="toggleCamposCUP()" />
+                    <label for="entrada_cup" style="margin-left: 5px;">Entrada en CUP</label>
+                </div>
+
+                <div id="campos_cup" style="display: none;">
+                    <label for="valor_cup">Valor en CUP:</label>
+                    <input type="number" id="valor_cup" name="valor_cup" step="0.01" min="0.01" oninput="calcularValorUSD()" />
+
+                    <label for="tasa">Tasa:</label>
+                    <input type="number" id="tasa" name="tasa" step="0.01" min="0.01" readonly />
+                </div>
 
                 <label for="valor_usd_entrada">Valor USD:</label>
                 <input type="number" id="valor_usd_entrada" name="valor_usd" step="0.01" min="0.01" required />
@@ -435,7 +609,14 @@ ob_end_flush();
                 <input type="hidden" name="producto" value="<?= $producto_id ?>">
 
                 <label for="fecha_salida">Fecha:</label>
-                <input type="date" id="fecha_salida" name="fecha" required />
+                <input type="date" id="fecha_salida" name="fecha" required
+                    onchange="validarFechaConTasaSalida(this.value)" />
+                <datalist id="fechas_con_tasa_salida">
+                    <?php foreach ($fechas_con_tasa as $fecha): ?>
+                        <option value="<?= $fecha ?>">
+                        <?php endforeach; ?>
+                </datalist>
+                <div id="fecha_error_salida" style="color: red; display: none;">No existe tasa para esta fecha</div>
 
                 <label for="cantidad_fisica_salida">Cantidad Física (<?= htmlspecialchars($producto_um) ?>):</label>
                 <input type="number" id="cantidad_fisica_salida" name="cantidad_fisica" step="0.001" min="0.001" max="<?= $saldo_actual['saldo_fisico'] ?>" required />
@@ -461,19 +642,12 @@ ob_end_flush();
             </form>
         </div>
 
-        <!-- Formulario Cerrar Tarjeta -->
-        <div id="cerrarFormContainer" class="sub-form" style="display: none;">
-            <h3>¿Cerrar Tarjeta de Estiba?</h3>
-            <p>Esta acción actualizará el inventario con los saldos actuales.</p>
-            <form method="POST" action="almacen_canal_tarjetas_estiba_usd.php?producto=<?= $producto_id ?>">
-                <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
-                <input type="hidden" name="producto" value="<?= $producto_id ?>">
-                <div style="display: flex; gap: 10px; margin-top: 20px;">
-                    <button type="submit" name="cerrar_tarjeta" class="btn-primary">Confirmar Cierre</button>
-                    <button type="button" onclick="hideForms()" class="btn-primary">Cancelar</button>
-                </div>
-            </form>
-        </div>
+        <!-- Formulario Volver a Inventarios (oculto) -->
+        <form id="volverForm" method="POST" action="almacen_canal_tarjetas_estiba_usd.php?producto=<?= $producto_id ?>" style="display: none;">
+            <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
+            <input type="hidden" name="producto" value="<?= $producto_id ?>">
+            <input type="hidden" name="volver_inventarios" value="1">
+        </form>
     <?php endif; ?>
 </div>
 
@@ -486,58 +660,142 @@ ob_end_flush();
         <?php if ($producto_id > 0): ?>
             <li><button onclick="showEntradaForm()" class="nav-button">+ Nueva Entrada</button></li>
             <li><button onclick="showSalidaForm()" class="nav-button">- Nueva Salida</button></li>
-            <li><button onclick="showCerrarForm()" class="nav-button">✓ Cerrar Tarjeta</button></li>
-            <li><button onclick="location.href='almacen_canal_inventario_usd.php'" class="nav-button">← Volver a Inventarios</button></li>
+            <li><button onclick="document.getElementById('volverForm').submit();" class="nav-button">← Volver a Inventarios</button></li>
         <?php else: ?>
             <li><button onclick="location.href='almacen_canal_inventario_usd.php'" class="nav-button">← Volver a Inventarios</button></li>
         <?php endif; ?>
     </ul>
 </div>
 
-<!-- SECCIÓN 5: JAVASCRIPT PARA INTERACCIÓN -->
+<!-- JavaScript para funcionalidades adicionales -->
 <script>
-    /**
-     * Muestra formulario de entrada
-     */
+    // Función para confirmar eliminación
+    function confirmarEliminacion(form) {
+        return confirm("¿Está seguro que desea eliminar este registro? Esta acción no se puede deshacer.");
+    }
+
+    // Funciones para mostrar/ocultar formularios
     function showEntradaForm() {
-        hideForms();
         document.getElementById('entradaFormContainer').style.display = 'block';
-        scrollToBottom();
+        document.getElementById('salidaFormContainer').style.display = 'none';
+
+        // Hacer scroll suave hasta el formulario de entrada
+        document.getElementById('entradaFormContainer').scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+        });
+
+        // Enfocar el primer campo del formulario
+        setTimeout(function() {
+            document.getElementById('fecha_entrada').focus();
+        }, 500);
     }
 
-    /**
-     * Muestra formulario de salida
-     */
     function showSalidaForm() {
-        hideForms();
+        document.getElementById('entradaFormContainer').style.display = 'none';
         document.getElementById('salidaFormContainer').style.display = 'block';
-        scrollToBottom();
+
+        // Hacer scroll suave hasta el formulario de salida
+        document.getElementById('salidaFormContainer').scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+        });
+
+        // Enfocar el primer campo del formulario
+        setTimeout(function() {
+            document.getElementById('fecha_salida').focus();
+        }, 500);
     }
 
-    /**
-     * Muestra formulario de cierre de tarjeta
-     */
-    function showCerrarForm() {
-        hideForms();
-        document.getElementById('cerrarFormContainer').style.display = 'block';
-        scrollToBottom();
-    }
-
-    /**
-     * Oculta todos los formularios
-     */
     function hideForms() {
         document.getElementById('entradaFormContainer').style.display = 'none';
         document.getElementById('salidaFormContainer').style.display = 'none';
-        document.getElementById('cerrarFormContainer').style.display = 'none';
     }
 
-    /**
-     * Hace scroll al final de la página
-     */
-    function scrollToBottom() {
-        window.scrollTo(0, document.body.scrollHeight);
+    // Validar fecha con tasa disponible
+    function validarFechaConTasa(fecha) {
+        const fechasConTasa = <?= json_encode($fechas_con_tasa) ?>;
+        const fechaError = document.getElementById('fecha_error');
+        const tasaInput = document.getElementById('tasa');
+        const valorCUPInput = document.getElementById('valor_cup');
+        const valorUSDInput = document.getElementById('valor_usd_entrada');
+
+        if (!fechasConTasa.includes(fecha)) {
+            fechaError.style.display = 'block';
+            tasaInput.value = '';
+            return;
+        }
+
+        fechaError.style.display = 'none';
+
+        // Obtener tasa desde el servidor
+        fetch('../../controllers/get_tasa.php?fecha=' + fecha)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    tasaInput.value = data.tasa;
+                    // Si hay valor en CUP, recalcular USD
+                    if (valorCUPInput.value) {
+                        valorUSDInput.value = (parseFloat(valorCUPInput.value) / parseFloat(data.tasa)).toFixed(2);
+                    }
+                } else {
+                    alert('Error al obtener la tasa: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error al obtener la tasa');
+            });
     }
+
+    function validarFechaConTasaSalida(fecha) {
+        const fechasConTasa = <?= json_encode($fechas_con_tasa) ?>;
+        const fechaError = document.getElementById('fecha_error_salida');
+
+        if (!fechasConTasa.includes(fecha)) {
+            fechaError.style.display = 'block';
+            return;
+        }
+
+        fechaError.style.display = 'none';
+    }
+
+    // Calcular valor USD basado en CUP y tasa
+    function calcularValorUSD() {
+        const valorCUP = parseFloat(document.getElementById('valor_cup').value) || 0;
+        const tasa = parseFloat(document.getElementById('tasa').value) || 1;
+        document.getElementById('valor_usd_entrada').value = (valorCUP / tasa).toFixed(2);
+    }
+
+    // Mostrar/ocultar campos CUP
+    function toggleCamposCUP() {
+        const checkbox = document.getElementById('entrada_cup');
+        const camposCUP = document.getElementById('campos_cup');
+        const valorUSDInput = document.getElementById('valor_usd_entrada');
+
+        if (checkbox.checked) {
+            camposCUP.style.display = 'block';
+            valorUSDInput.readOnly = true;
+            // Obtener tasa para la fecha seleccionada si ya hay una fecha
+            const fechaInput = document.getElementById('fecha_entrada');
+            if (fechaInput.value) {
+                validarFechaConTasa(fechaInput.value);
+            }
+        } else {
+            camposCUP.style.display = 'none';
+            valorUSDInput.readOnly = false;
+            document.getElementById('valor_cup').value = '';
+            document.getElementById('tasa').value = '';
+        }
+    }
+
+    // Ocultar notificación flotante después de 5 segundos
+    setTimeout(() => {
+        const notification = document.getElementById('floatingNotification');
+        if (notification) {
+            notification.style.display = 'none';
+        }
+    }, 5000);
 </script>
 
 <?php include('../../templates/footer.php'); ?>
