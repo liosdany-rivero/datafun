@@ -390,9 +390,9 @@ if ($producto_id > 0) {
     }
 }
 
-// Obtener lista de centros de costo para el select (solo aquellos con E_A_Canal_USD = 1)
+// Obtener lista de centros de costo para el select (solo aquellos con S_A_Canal_USD = 1)
 $centros_costo = [];
-$sql_centros = "SELECT codigo, nombre FROM centros_costo WHERE E_A_Canal_USD = 1 ORDER BY nombre";
+$sql_centros = "SELECT codigo, nombre FROM centros_costo WHERE S_A_Canal_USD = 1 ORDER BY nombre";
 $result_centros = mysqli_query($conn, $sql_centros);
 while ($row = mysqli_fetch_assoc($result_centros)) {
     $centros_costo[$row['codigo']] = $row['nombre'];
@@ -621,8 +621,26 @@ ob_end_flush();
                 <label for="cantidad_fisica_salida">Cantidad Física (<?= htmlspecialchars($producto_um) ?>):</label>
                 <input type="number" id="cantidad_fisica_salida" name="cantidad_fisica" step="0.001" min="0.001" max="<?= $saldo_actual['saldo_fisico'] ?>" required />
 
+                <div style="margin: 15px 0; display: flex; align-items: center;">
+                    <input type="checkbox" id="establecer_importe_usd" name="establecer_importe_usd" value="1" onchange="toggleModoUSD()" />
+                    <label for="establecer_importe_usd" style="margin-left: 5px;">Establecer importe USD</label>
+                </div>
+
+                <div style="margin: 15px 0; display: flex; align-items: center;">
+                    <input type="checkbox" id="establecer_importe_cup" name="establecer_importe_cup" value="1" onchange="toggleModoCUP()" />
+                    <label for="establecer_importe_cup" style="margin-left: 5px;">Establecer importe CUP</label>
+                </div>
+
+
+                <label for="tasa_salida">Tasa:</label>
+                <input type="number" id="tasa_salida" name="tasa_salida" step="0.01" min="0.01" readonly />
+
+                <label for="valor_cup_salida">Valor CUP:</label>
+                <input type="number" id="valor_cup_salida" name="valor_cup_salida" step="0.01" min="0.01" oninput="calcularValorUSDDesdeCUP()" readonly />
+
                 <label for="valor_usd_salida">Valor USD:</label>
-                <input type="number" id="valor_usd_salida" name="valor_usd" step="0.01" min="0.01" max="<?= $saldo_actual['valor_usd'] ?>" required />
+
+                <input type="number" id="valor_usd_salida" name="valor_usd" step="0.01" min="0.01" max="<?= $saldo_actual['valor_usd'] ?>" required readonly />
 
                 <label for="desde_para_salida">Para/Centro Costo:</label>
                 <select id="desde_para_salida" name="desde_para" required>
@@ -658,11 +676,11 @@ ob_end_flush();
 <div id="barra-estado">
     <ul class="secondary-nav-menu">
         <?php if ($producto_id > 0): ?>
-            <li><button onclick="showEntradaForm()" class="nav-button">+ Nueva Entrada</button></li>
-            <li><button onclick="showSalidaForm()" class="nav-button">- Nueva Salida</button></li>
-            <li><button onclick="document.getElementById('volverForm').submit();" class="nav-button">← Volver a Inventarios</button></li>
+            <li><button onclick="document.getElementById('volverForm').submit();" class="nav-button">← Inventarios</button></li>
+            <li><button onclick="showEntradaForm()" class="nav-button">+ Entrada</button></li>
+            <li><button onclick="showSalidaForm()" class="nav-button">- Salida</button></li>
         <?php else: ?>
-            <li><button onclick="location.href='almacen_canal_inventario_usd.php'" class="nav-button">← Volver a Inventarios</button></li>
+            <li><button onclick="location.href='almacen_canal_inventario_usd.php'" class="nav-button">← Inventarios</button></li>
         <?php endif; ?>
     </ul>
 </div>
@@ -751,13 +769,39 @@ ob_end_flush();
     function validarFechaConTasaSalida(fecha) {
         const fechasConTasa = <?= json_encode($fechas_con_tasa) ?>;
         const fechaError = document.getElementById('fecha_error_salida');
+        const tasaInput = document.getElementById('tasa_salida');
 
         if (!fechasConTasa.includes(fecha)) {
             fechaError.style.display = 'block';
+            tasaInput.value = '';
             return;
         }
 
         fechaError.style.display = 'none';
+
+        // Obtener tasa desde el servidor
+        fetch('../../controllers/get_tasa.php?fecha=' + fecha)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    tasaInput.value = data.tasa;
+                    // Recalcular valores basados en la nueva tasa
+                    if (document.getElementById('establecer_importe_cup').checked) {
+                        calcularValorUSDDesdeCUP();
+                    } else if (document.getElementById('establecer_importe_usd').checked) {
+                        calcularValorCUPDesdeUSD();
+                    } else {
+                        // Si ninguno está marcado, calcular ambos
+                        calcularValorUSDDesdeCantidad();
+                    }
+                } else {
+                    alert('Error al obtener la tasa: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error al obtener la tasa');
+            });
     }
 
     // Calcular valor USD basado en CUP y tasa
@@ -796,6 +840,180 @@ ob_end_flush();
             notification.style.display = 'none';
         }
     }, 5000);
+
+    // Funciones para el formulario de salida
+    function toggleModoUSD() {
+        const establecerUSD = document.getElementById('establecer_importe_usd').checked;
+        const valorUSDInput = document.getElementById('valor_usd_salida');
+        const valorCUPInput = document.getElementById('valor_cup_salida');
+
+        if (establecerUSD) {
+            valorUSDInput.readOnly = false;
+            valorCUPInput.readOnly = true; // Mantener CUP como solo lectura
+            // Si está marcado, desactivar el modo CUP
+            document.getElementById('establecer_importe_cup').checked = false;
+            // Calcular CUP basado en USD cuando se activa el modo USD
+            calcularValorCUPDesdeUSD();
+        } else {
+            valorUSDInput.readOnly = true;
+            // Si tampoco está en modo CUP, calcular automáticamente
+            if (!document.getElementById('establecer_importe_cup').checked) {
+                calcularValorUSDDesdeCantidad();
+            }
+        }
+    }
+
+    function toggleModoCUP() {
+        const establecerCUP = document.getElementById('establecer_importe_cup').checked;
+        const valorCUPInput = document.getElementById('valor_cup_salida');
+        const valorUSDInput = document.getElementById('valor_usd_salida');
+        const establecerUSD = document.getElementById('establecer_importe_usd');
+
+        if (establecerCUP) {
+            valorCUPInput.readOnly = false;
+            valorUSDInput.readOnly = true; // Mantener USD como solo lectura
+            // Si está marcado, desactivar el modo USD
+            establecerUSD.checked = false;
+            // Calcular USD basado en CUP cuando se activa el modo CUP
+            calcularValorUSDDesdeCUP();
+        } else {
+            valorCUPInput.readOnly = true;
+            // Si tampoco está en modo USD, calcular automáticamente
+            if (!document.getElementById('establecer_importe_usd').checked) {
+                calcularValorUSDDesdeCantidad();
+            }
+        }
+    }
+
+    function calcularValorUSDDesdeCantidad() {
+        const cantidad = parseFloat(document.getElementById('cantidad_fisica_salida').value) || 0;
+
+        // Obtener el último registro para este producto
+        fetch('../../controllers/get_ultimo_registro.php?producto=<?= $producto_id ?>')
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const precioUnitario = data.saldo_usd / data.saldo_fisico;
+                    const valorUSD = cantidad * precioUnitario;
+                    document.getElementById('valor_usd_salida').value = valorUSD.toFixed(2);
+                    calcularValorCUPDesdeUSD();
+                } else {
+                    console.error('Error al obtener último registro:', data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+    }
+
+    function calcularValorCUPDesdeUSD() {
+        const valorUSD = parseFloat(document.getElementById('valor_usd_salida').value) || 0;
+        const tasa = parseFloat(document.getElementById('tasa_salida').value) || 1;
+        document.getElementById('valor_cup_salida').value = (valorUSD * tasa).toFixed(2);
+    }
+
+    function calcularValorUSDDesdeCUP() {
+        const valorCUP = parseFloat(document.getElementById('valor_cup_salida').value) || 0;
+        const tasa = parseFloat(document.getElementById('tasa_salida').value) || 1;
+        document.getElementById('valor_usd_salida').value = (valorCUP / tasa).toFixed(2);
+    }
+
+    // Actualizar la función validarFechaConTasaSalida para obtener la tasa
+    function validarFechaConTasaSalida(fecha) {
+        const fechasConTasa = <?= json_encode($fechas_con_tasa) ?>;
+        const fechaError = document.getElementById('fecha_error_salida');
+        const tasaInput = document.getElementById('tasa_salida');
+
+        if (!fechasConTasa.includes(fecha)) {
+            fechaError.style.display = 'block';
+            tasaInput.value = '';
+            return;
+        }
+
+        fechaError.style.display = 'none';
+
+        // Obtener tasa desde el servidor
+        fetch('../../controllers/get_tasa.php?fecha=' + fecha)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    tasaInput.value = data.tasa;
+                    // Recalcular valores basados en la nueva tasa
+                    if (document.getElementById('establecer_importe_cup').checked) {
+                        calcularValorUSDDesdeCUP();
+                    } else if (document.getElementById('establecer_importe_usd').checked) {
+                        calcularValorCUPDesdeUSD();
+                    } else {
+                        // Si ninguno está marcado, calcular ambos
+                        calcularValorUSDDesdeCantidad();
+                    }
+                } else {
+                    alert('Error al obtener la tasa: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error al obtener la tasa');
+            });
+    }
+
+    // Event listener para el campo cantidad_fisica_salida
+    document.getElementById('cantidad_fisica_salida').addEventListener('input', function() {
+        // Solo calcular automáticamente si ninguno de los checkboxes está marcado
+        if (!document.getElementById('establecer_importe_usd').checked &&
+            !document.getElementById('establecer_importe_cup').checked) {
+            calcularValorUSDDesdeCantidad();
+        }
+    });
+
+    // Inicializar el estado de los campos al cargar la página
+    function inicializarCamposSalida() {
+        // Establecer ambos campos como solo lectura inicialmente
+        document.getElementById('valor_usd_salida').readOnly = true;
+        document.getElementById('valor_cup_salida').readOnly = true;
+
+        // Asegurarse de que los checkboxes estén desmarcados
+        document.getElementById('establecer_importe_usd').checked = false;
+        document.getElementById('establecer_importe_cup').checked = false;
+
+        // Calcular valores iniciales
+        calcularValorUSDDesdeCantidad();
+    }
+
+    // Llamar a la función de inicialización cuando se muestre el formulario de salida
+    function showSalidaForm() {
+        document.getElementById('entradaFormContainer').style.display = 'none';
+        document.getElementById('salidaFormContainer').style.display = 'block';
+
+        // Hacer scroll suave hasta el formulario de salida
+        document.getElementById('salidaFormContainer').scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+        });
+
+        // Inicializar campos de salida
+        inicializarCamposSalida();
+
+        // Enfocar el primer campo del formulario
+        setTimeout(function() {
+            document.getElementById('fecha_salida').focus();
+        }, 500);
+    }
+
+    // Calcular valor CUP basado en USD y tasa
+    function calcularValorCUPDesdeUSD() {
+        const valorUSD = parseFloat(document.getElementById('valor_usd_salida').value) || 0;
+        const tasa = parseFloat(document.getElementById('tasa_salida').value) || 1;
+        document.getElementById('valor_cup_salida').value = (valorUSD * tasa).toFixed(2);
+    }
+
+    // Event listener para el campo valor_usd_salida cuando está en modo editable
+    document.getElementById('valor_usd_salida').addEventListener('input', function() {
+        // Si está en modo USD editable, calcular CUP automáticamente
+        if (document.getElementById('establecer_importe_usd').checked) {
+            calcularValorCUPDesdeUSD();
+        }
+    });
 </script>
 
 <?php include('../../templates/footer.php'); ?>
