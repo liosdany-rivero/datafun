@@ -1,0 +1,16 @@
+Quisiera implementar algunas modificaciones en el formulario editar registro de la página almacen_canal_tarjetas_estiba_usd.php.
+Aqui hay que tener presente que este formulario se utilizará tanto para editar los registros de entrada como los registros de salida de la tabla por tanto puesto que existen algunas variaciones cuandoes un registro de entrada y cuando es un registro de salida debes tener en cuenta siempre esto si es un registro de entrada o un registro de salida lo que estas editando.
+A contuniacion te voy a poner las modificaciones que quiero implementar en este formulario:
+
+1. Quisiera agregarle al formulario un control al que llamaremos tasa que me tome la tasa de acuerdo a la fecha como hacen los formularios de registro de entradas y registro de salidas. Este control solo se utiizara para la logica del frontend por lo que su valor no se guardara en la base de datos.
+2. Quisiera agregar un control al que llamaremos valor CUP el cual tendrá un valor que será el resultado de multiplicar el valor del control de tasa por el valor del control de Valor USD. Este control solo se utiizara para la logica del frontend por lo que su valor no se guardara en la base de datos.
+3. En el caso del control Centro Costo si es una entrada que me muestre los centros de costo de la tabla centros_costo cuya columna E_A_Canal_USD sea verdadera, pero si es una salida entonces que muestre los centros de costo de la tabla centros_costo cuya columna S_A_Canal_USD sea verdadera.
+4. Ademas si es un registro de salida quiero que el formulario muestre dos controles mas un chekboox al que llamaremos Establecer importe USD y otro chekboox al que llamaremos Establecer importe CUP. Estos controles por defecto estaran en falso y solo se utiizaran para la logica del frontend por lo que sus valores no se guardaran en la base de datos.
+5. Si es un registro de entrada quiero que el formulario muestre un control chekboox al que llamaremos llamaremos Establecer importe CUP. Este control por defecto estara en falso y solo se utiizara para la logica del frontend por lo que su valor no se guardaran en la base de datos.
+
+Ahora te voy a dar mas información sobre la logica que quiero implementar cuando manipule los datos:
+
+1. Si es un registro de salida quiero implementar la misma logica del formulario registro de salida para los controles Valor CUP, Valor USD, Establecer importe USD, Establecer importe CUP, si quieres mas informacion de esto preguntame.
+2. Si es un registro de entrada quiero implementar la misma logica del formulario regisro de entradas para los controles Valor en CUP, Valor USD, Entrada en CUP, solo que aqui hay leves variaciones pues el control del formulario registro de entrada llamado Entrada en CUP en el formulario de edicion se llama Establecer importe CUP y en el formulario de edicion el control valor en CUP estara visible siempre.
+
+Quiero que me pongas el código que tengo que agregar a mi pagina pero que me indiques claramente en que lugar específico lo pongo, hazme una diferenciación bien clara del código que ya tengo y el que hay que implementar y cuando haya que modificar una línea de código existente ponme claramente la linea anterior y su modificacion para poder ver bien los cambios nuevos.

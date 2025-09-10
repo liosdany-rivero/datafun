@@ -157,7 +157,204 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['eliminar_registro'])) 
     exit();
 }
 
-// 2.2 Creación de entrada/salida en tarjeta de estiba
+// 2.2 Edición de registro existente
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['editar_registro'])) {
+    // Validación CSRF
+    if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
+        die("Token CSRF inválido");
+    }
+
+    // Recoger y sanitizar datos del formulario
+    $numero_operacion = (int)$_POST['numero_operacion'];
+    $producto = (int)$_POST['producto'];
+    $fecha = trim($_POST['fecha']);
+    $cantidad_fisica = (float)$_POST['cantidad_fisica'];
+    $valor_usd = (float)$_POST['valor_usd'];
+    $desde_para = (int)$_POST['desde_para'];
+    $observaciones = trim($_POST['observaciones']);
+    $tipo_movimiento = trim($_POST['tipo_movimiento']);
+
+    // Validar campos obligatorios
+    if (empty($fecha)) {
+        $_SESSION['error_msg'] = "⚠️ La fecha es obligatoria";
+        header("Location: almacen_canal_tarjetas_estiba_usd.php?producto=$producto");
+        exit();
+    }
+
+    // Validar que existe tasa para la fecha seleccionada
+    $sql_tasa = "SELECT tasa FROM tasas WHERE fecha = ?";
+    $stmt_tasa = $conn->prepare($sql_tasa);
+    $stmt_tasa->bind_param("s", $fecha);
+    $stmt_tasa->execute();
+    $result_tasa = $stmt_tasa->get_result();
+
+    if ($result_tasa->num_rows === 0) {
+        $_SESSION['error_msg'] = "⚠️ No existe una tasa definida para la fecha seleccionada";
+        header("Location: almacen_canal_tarjetas_estiba_usd.php?producto=$producto");
+        exit();
+    }
+    $stmt_tasa->close();
+
+    if (empty($cantidad_fisica) || $cantidad_fisica <= 0) {
+        $_SESSION['error_msg'] = "⚠️ La cantidad física debe ser mayor a 0";
+        header("Location: almacen_canal_tarjetas_estiba_usd.php?producto=$producto");
+        exit();
+    }
+
+    if (empty($valor_usd) || $valor_usd <= 0) {
+        $_SESSION['error_msg'] = "⚠️ El valor USD debe ser mayor a 0";
+        header("Location: almacen_canal_tarjetas_estiba_usd.php?producto=$producto");
+        exit();
+    }
+
+    if (empty($desde_para)) {
+        $_SESSION['error_msg'] = "⚠️ El centro de costo es obligatorio";
+        header("Location: almacen_canal_tarjetas_estiba_usd.php?producto=$producto");
+        exit();
+    }
+
+    try {
+        // Iniciar transacción
+        $conn->begin_transaction();
+
+        // Obtener el registro original para comparar
+        $sql_original = "SELECT cantidad_fisica, valor_usd, tipo_movimiento 
+                        FROM almacen_canal_tarjetas_estiba_usd 
+                        WHERE numero_operacion = ? AND producto = ?";
+        $stmt_original = $conn->prepare($sql_original);
+        $stmt_original->bind_param("ii", $numero_operacion, $producto);
+        $stmt_original->execute();
+        $registro_original = $stmt_original->get_result()->fetch_assoc();
+        $stmt_original->close();
+
+        if (!$registro_original) {
+            throw new Exception("Registro no encontrado");
+        }
+
+        // Actualizar el registro
+        $sql_update = "UPDATE almacen_canal_tarjetas_estiba_usd 
+                      SET fecha = ?, cantidad_fisica = ?, valor_usd = ?, 
+                          desde_para = ?, observaciones = ?, tipo_movimiento = ?
+                      WHERE numero_operacion = ? AND producto = ?";
+
+        $stmt_update = $conn->prepare($sql_update);
+        $stmt_update->bind_param(
+            "sddissii",
+            $fecha,
+            $cantidad_fisica,
+            $valor_usd,
+            $desde_para,
+            $observaciones,
+            $tipo_movimiento,
+            $numero_operacion,
+            $producto
+        );
+
+        if (!$stmt_update->execute()) {
+            throw new Exception("Error al actualizar registro: " . $stmt_update->error);
+        }
+        $stmt_update->close();
+
+        // Recalcular todos los saldos desde este registro en adelante
+        // Obtener el saldo anterior al registro editado
+        $sql_anterior = "SELECT saldo_fisico, saldo_usd 
+                        FROM almacen_canal_tarjetas_estiba_usd 
+                        WHERE producto = ? AND numero_operacion < ?
+                        ORDER BY numero_operacion DESC 
+                        LIMIT 1";
+        $stmt_anterior = $conn->prepare($sql_anterior);
+        $stmt_anterior->bind_param("ii", $producto, $numero_operacion);
+        $stmt_anterior->execute();
+        $result_anterior = $stmt_anterior->get_result();
+
+        // Si hay registro anterior, usar sus saldos como base
+        if ($result_anterior->num_rows > 0) {
+            $saldo_base = $result_anterior->fetch_assoc();
+            $saldo_fisico_actual = $saldo_base['saldo_fisico'];
+            $saldo_usd_actual = $saldo_base['saldo_usd'];
+        } else {
+            // Si no hay registros anteriores, empezar desde cero
+            $saldo_fisico_actual = 0;
+            $saldo_usd_actual = 0;
+        }
+        $stmt_anterior->close();
+
+        // Obtener todos los registros desde el editado en adelante
+        $sql_posteriores = "SELECT numero_operacion, tipo_movimiento, cantidad_fisica, valor_usd 
+                           FROM almacen_canal_tarjetas_estiba_usd 
+                           WHERE producto = ? AND numero_operacion >= ?
+                           ORDER BY numero_operacion ASC";
+        $stmt_posteriores = $conn->prepare($sql_posteriores);
+        $stmt_posteriores->bind_param("ii", $producto, $numero_operacion);
+        $stmt_posteriores->execute();
+        $result_posteriores = $stmt_posteriores->get_result();
+        $stmt_posteriores->close();
+
+        // Recalcular saldos para todos los registros
+        while ($registro = $result_posteriores->fetch_assoc()) {
+            if ($registro['tipo_movimiento'] === 'entrada') {
+                $saldo_fisico_actual += $registro['cantidad_fisica'];
+                $saldo_usd_actual += $registro['valor_usd'];
+            } else {
+                $saldo_fisico_actual -= $registro['cantidad_fisica'];
+                $saldo_usd_actual -= $registro['valor_usd'];
+            }
+
+            // Aplicar redondeo para mantener precisión
+            $saldo_fisico_actual = round($saldo_fisico_actual, 3);
+            $saldo_usd_actual = round($saldo_usd_actual, 2);
+
+            // Actualizar el registro con los nuevos saldos
+            $sql_update_saldo = "UPDATE almacen_canal_tarjetas_estiba_usd 
+                                SET saldo_fisico = ?, saldo_usd = ? 
+                                WHERE numero_operacion = ? AND producto = ?";
+            $stmt_update_saldo = $conn->prepare($sql_update_saldo);
+            $stmt_update_saldo->bind_param(
+                "ddii",
+                $saldo_fisico_actual,
+                $saldo_usd_actual,
+                $registro['numero_operacion'],
+                $producto
+            );
+
+            if (!$stmt_update_saldo->execute()) {
+                throw new Exception("Error al actualizar saldos: " . $stmt_update_saldo->error);
+            }
+            $stmt_update_saldo->close();
+        }
+
+        // Actualizar el inventario con el último saldo
+        $sql_inv = "INSERT INTO almacen_canal_inventario_usd 
+                   (producto, saldo_fisico, valor_usd, fecha_operacion) 
+                   VALUES (?, ?, ?, CURDATE())
+                   ON DUPLICATE KEY UPDATE 
+                   saldo_fisico = VALUES(saldo_fisico), 
+                   valor_usd = VALUES(valor_usd), 
+                   fecha_operacion = VALUES(fecha_operacion)";
+
+        $stmt_inv = $conn->prepare($sql_inv);
+        $stmt_inv->bind_param("idd", $producto, $saldo_fisico_actual, $saldo_usd_actual);
+
+        if (!$stmt_inv->execute()) {
+            throw new Exception("Error al actualizar inventario: " . $stmt_inv->error);
+        }
+        $stmt_inv->close();
+
+        $conn->commit();
+        $_SESSION['success_msg'] = "✅ Registro editado correctamente. Saldos actualizados.";
+    } catch (Exception $e) {
+        $conn->rollback();
+        $_SESSION['error_msg'] = "⚠️ " . $e->getMessage();
+    }
+
+    // Regenerar token y redirigir
+    unset($_SESSION['csrf_token']);
+    ob_clean();
+    header("Location: almacen_canal_tarjetas_estiba_usd.php?producto=$producto");
+    exit();
+}
+
+// 2.3 Creación de entrada/salida en tarjeta de estiba
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && (isset($_POST['save_entrada']) || isset($_POST['save_salida']))) {
     // Validación CSRF
     if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
@@ -315,7 +512,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && (isset($_POST['save_entrada']) || is
     exit();
 }
 
-// 2.3 Cerrar tarjeta de estiba automáticamente al volver a inventarios
+// 2.4 Cerrar tarjeta de estiba automáticamente al volver a inventarios
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['volver_inventarios'])) {
     if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
         die("Token CSRF inválido");
@@ -390,12 +587,20 @@ if ($producto_id > 0) {
     }
 }
 
-// Obtener lista de centros de costo para el select (solo aquellos con S_A_Canal_USD = 1)
-$centros_costo = [];
-$sql_centros = "SELECT codigo, nombre FROM centros_costo WHERE S_A_Canal_USD = 1 ORDER BY nombre";
-$result_centros = mysqli_query($conn, $sql_centros);
-while ($row = mysqli_fetch_assoc($result_centros)) {
-    $centros_costo[$row['codigo']] = $row['nombre'];
+// Obtener lista de centros de costo para entrada (E_A_Canal_USD = 1) y salida (S_A_Canal_USD = 1)
+$centros_costo_entrada = [];
+$centros_costo_salida = [];
+
+$sql_centros_entrada = "SELECT codigo, nombre FROM centros_costo WHERE E_A_Canal_USD = 1 ORDER BY nombre";
+$result_centros_entrada = mysqli_query($conn, $sql_centros_entrada);
+while ($row = mysqli_fetch_assoc($result_centros_entrada)) {
+    $centros_costo_entrada[$row['codigo']] = $row['nombre'];
+}
+
+$sql_centros_salida = "SELECT codigo, nombre FROM centros_costo WHERE S_A_Canal_USD = 1 ORDER BY nombre";
+$result_centros_salida = mysqli_query($conn, $sql_centros_salida);
+while ($row = mysqli_fetch_assoc($result_centros_salida)) {
+    $centros_costo_salida[$row['codigo']] = $row['nombre'];
 }
 
 // Obtener saldo actual del inventario
@@ -443,6 +648,21 @@ $result_fechas = mysqli_query($conn, $sql_fechas);
 while ($row = mysqli_fetch_assoc($result_fechas)) {
     $fechas_con_tasa[] = $row['fecha'];
 }
+
+// Obtener datos para edición si se ha solicitado
+$registro_editar = null;
+if (isset($_GET['editar']) && $producto_id > 0) {
+    $numero_operacion_editar = (int)$_GET['editar'];
+    $sql_editar = "SELECT * FROM almacen_canal_tarjetas_estiba_usd 
+                  WHERE numero_operacion = ? AND producto = ?";
+    $stmt_editar = $conn->prepare($sql_editar);
+    $stmt_editar->bind_param("ii", $numero_operacion_editar, $producto_id);
+    $stmt_editar->execute();
+    $result_editar = $stmt_editar->get_result();
+    $registro_editar = $result_editar->fetch_assoc();
+    $stmt_editar->close();
+}
+
 ob_end_flush();
 ?>
 
@@ -491,13 +711,16 @@ ob_end_flush();
                         <td data-label="Centro Costo"><?= htmlspecialchars($row['centro_nombre']) ?></td>
                         <td data-label="Observaciones"><?= htmlspecialchars($row['observaciones']) ?></td>
                         <td data-label="Acciones">
-                            <form method="POST" action="almacen_canal_tarjetas_estiba_usd.php?producto=<?= $producto_id ?>"
-                                class="delete-form" onsubmit="return confirmarEliminacion(this)">
-                                <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
-                                <input type="hidden" name="numero_operacion" value="<?= $row['numero_operacion'] ?>">
-                                <input type="hidden" name="producto" value="<?= $producto_id ?>">
-                                <button type="submit" name="eliminar_registro" class="btn-danger btn-small">Eliminar</button>
-                            </form>
+                            <div style="display: flex; gap: 5px;">
+                                <button onclick="editarRegistro(<?= $row['numero_operacion'] ?>)" class="btn-warning btn-small">Editar</button>
+                                <form method="POST" action="almacen_canal_tarjetas_estiba_usd.php?producto=<?= $producto_id ?>"
+                                    class="delete-form" onsubmit="return confirmarEliminacion(this)">
+                                    <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
+                                    <input type="hidden" name="numero_operacion" value="<?= $row['numero_operacion'] ?>">
+                                    <input type="hidden" name="producto" value="<?= $producto_id ?>">
+                                    <button type="submit" name="eliminar_registro" class="btn-danger btn-small">Eliminar</button>
+                                </form>
+                            </div>
                         </td>
                     </tr>
                 <?php endforeach; ?>
@@ -586,7 +809,7 @@ ob_end_flush();
                 <label for="desde_para_entrada">Desde/Centro Costo:</label>
                 <select id="desde_para_entrada" name="desde_para" required>
                     <option value="">Seleccione centro de costo</option>
-                    <?php foreach ($centros_costo as $codigo => $nombre): ?>
+                    <?php foreach ($centros_costo_entrada  as $codigo => $nombre): ?>
                         <option value="<?= $codigo ?>"><?= htmlspecialchars($nombre) ?></option>
                     <?php endforeach; ?>
                 </select>
@@ -631,12 +854,11 @@ ob_end_flush();
                     <label for="establecer_importe_cup" style="margin-left: 5px;">Establecer importe CUP</label>
                 </div>
 
+                <label for="valor_cup_salida">Valor CUP:</label>
+                <input type="number" id="valor_cup_salida" name="valor_cup_salida" step="0.01" min="0.01" oninput="calcularValorUSDDesdeCUP()" readonly />
 
                 <label for="tasa_salida">Tasa:</label>
                 <input type="number" id="tasa_salida" name="tasa_salida" step="0.01" min="0.01" readonly />
-
-                <label for="valor_cup_salida">Valor CUP:</label>
-                <input type="number" id="valor_cup_salida" name="valor_cup_salida" step="0.01" min="0.01" oninput="calcularValorUSDDesdeCUP()" readonly />
 
                 <label for="valor_usd_salida">Valor USD:</label>
 
@@ -645,7 +867,7 @@ ob_end_flush();
                 <label for="desde_para_salida">Para/Centro Costo:</label>
                 <select id="desde_para_salida" name="desde_para" required>
                     <option value="">Seleccione centro de costo</option>
-                    <?php foreach ($centros_costo as $codigo => $nombre): ?>
+                    <?php foreach ($centros_costo_salida  as $codigo => $nombre): ?>
                         <option value="<?= $codigo ?>"><?= htmlspecialchars($nombre) ?></option>
                     <?php endforeach; ?>
                 </select>
@@ -659,6 +881,83 @@ ob_end_flush();
                 </div>
             </form>
         </div>
+
+        <!-- Formulario Edición -->
+        <div id="editarFormContainer" class="sub-form" style="display: none;">
+            <h3>Editar Registro <span id="editar_info_operacion" style="font-size: 0.8em; color: #666;"></span></h3>
+            <form method="POST" action="almacen_canal_tarjetas_estiba_usd.php?producto=<?= $producto_id ?>" id="editarForm">
+                <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
+                <input type="hidden" name="producto" value="<?= $producto_id ?>">
+                <input type="hidden" name="numero_operacion" id="editar_numero_operacion">
+                <input type="hidden" name="tipo_movimiento" id="editar_tipo_movimiento">
+                <input type="hidden" name="editar_registro" value="1">
+                <input type="hidden" id="editar_tasa" name="tasa">
+
+                <label for="editar_fecha">Fecha:</label>
+                <input type="date" id="editar_fecha" name="fecha" required
+                    onchange="validarFechaConTasaEditar(this.value)" />
+                <datalist id="fechas_con_tasa_editar">
+                    <?php foreach ($fechas_con_tasa as $fecha): ?>
+                        <option value="<?= $fecha ?>">
+                        <?php endforeach; ?>
+                </datalist>
+                <div id="fecha_error_editar" style="color: red; display: none;">No existe tasa para esta fecha</div>
+
+                <label for="editar_cantidad_fisica">Cantidad Física (<?= htmlspecialchars($producto_um) ?>):</label>
+                <input type="number" id="editar_cantidad_fisica" name="cantidad_fisica" step="0.001" min="0.001" required />
+
+                <!-- Checkbox para Establecer importe CUP (solo para entradas) -->
+
+                <div id="editar_establecer_cup_container" style="margin: 15px 0; display: none;">
+                    <div style="display: flex; align-items: center; margin-bottom: 5px;">
+                        <input type="checkbox" id="editar_establecer_cup" name="editar_establecer_cup" value="1" onchange="toggleModoCUPEditar()" />
+                        <label for="editar_establecer_cup" style="margin-left: 5px;">Establecer importe CUP</label>
+                    </div>
+                </div>
+
+
+
+                <!-- Checkboxes para Establecer importe USD/CUP (solo para salidas) -->
+                <div id="editar_establecer_usd_cup_container" style="margin: 15px 0; display: none;">
+                    <div style="display: flex; align-items: center; margin-bottom: 5px;">
+                        <input type="checkbox" id="editar_establecer_usd" name="editar_establecer_usd" value="1"
+                            onchange="toggleModoUSDEditar()" />
+                        <label for="editar_establecer_usd" style="margin-left: 5px;">Establecer importe USD</label>
+                    </div>
+                    <div style="display: flex; align-items: center;">
+                        <input type="checkbox" id="editar_establecer_cup_salida" name="editar_establecer_cup_salida" value="1"
+                            onchange="toggleModoCUPSalidaEditar()" />
+                        <label for="editar_establecer_cup_salida" style="margin-left: 5px;">Establecer importe CUP</label>
+                    </div>
+                </div>
+
+                <!-- Controles para Valor CUP y Tasa (solo frontend) -->
+                <label for="editar_valor_cup">Valor CUP:</label>
+                <input type="number" id="editar_valor_cup" step="0.01" min="0.01" oninput="calcularValorUSDDesdeCUPEditar()" />
+
+                <label for="editar_tasa_visual">Tasa:</label>
+                <input type="number" id="editar_tasa_visual" step="0.01" min="0.01" readonly />
+
+                <label for="editar_valor_usd">Valor USD:</label>
+                <input type="number" id="editar_valor_usd" name="valor_usd" step="0.01" min="0.01" required
+                    oninput="calcularValorCUPDesdeUSDEditar()" />
+                <label for="editar_desde_para">Centro Costo:</label>
+                <select id="editar_desde_para" name="desde_para" required>
+                    <option value="">Seleccione centro de costo</option>
+                    <!-- Las opciones se llenarán dinámicamente con JavaScript -->
+                </select>
+
+                <label for="editar_observaciones">Observaciones:</label>
+                <textarea id="editar_observaciones" name="observaciones" rows="3"></textarea>
+
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button type="submit" class="btn-primary">Guardar Cambios</button>
+                    <button type="button" onclick="hideForms()" class="btn-primary">Cancelar</button>
+                </div>
+            </form>
+        </div>
+
+
 
         <!-- Formulario Volver a Inventarios (oculto) -->
         <form id="volverForm" method="POST" action="almacen_canal_tarjetas_estiba_usd.php?producto=<?= $producto_id ?>" style="display: none;">
@@ -966,6 +1265,8 @@ ob_end_flush();
         }
     });
 
+
+
     // Inicializar el estado de los campos al cargar la página
     function inicializarCamposSalida() {
         // Establecer ambos campos como solo lectura inicialmente
@@ -1014,6 +1315,295 @@ ob_end_flush();
             calcularValorCUPDesdeUSD();
         }
     });
+
+
+
+    function validarFechaConTasaEditar(fecha) {
+        const fechasConTasa = <?= json_encode($fechas_con_tasa) ?>;
+        const fechaError = document.getElementById('fecha_error_editar');
+        const tasaInputVisual = document.getElementById('editar_tasa_visual');
+        const tasaInputHidden = document.getElementById('editar_tasa');
+
+        if (!fechasConTasa.includes(fecha)) {
+            fechaError.style.display = 'block';
+            tasaInputVisual.value = '';
+            tasaInputHidden.value = '';
+            return;
+        }
+
+        fechaError.style.display = 'none';
+
+        // Obtener tasa desde el servidor
+        fetch('../../controllers/get_tasa.php?fecha=' + fecha)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    tasaInputVisual.value = data.tasa;
+                    tasaInputHidden.value = data.tasa;
+
+                    // Recalcular CUP basado en USD actual
+                    calcularValorCUPDesdeUSDEditar();
+
+                    // Si es una salida y estamos en modo automático, recalcular
+                    const tipoMovimiento = document.getElementById('editar_tipo_movimiento').value;
+                    const establecerUSD = document.getElementById('editar_establecer_usd')?.checked || false;
+                    const establecerCUP = document.getElementById('editar_establecer_cup_salida')?.checked || false;
+
+                    if (tipoMovimiento === 'salida' && !establecerUSD && !establecerCUP) {
+                        calcularValorUSDDesdeCantidadEditar();
+                    }
+                } else {
+                    alert('Error al obtener la tasa: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error al obtener la tasa');
+            });
+    }
+
+    // Modificar la función hideForms para ocultar también el formulario de edición
+    function hideForms() {
+        document.getElementById('entradaFormContainer').style.display = 'none';
+        document.getElementById('salidaFormContainer').style.display = 'none';
+        document.getElementById('editarFormContainer').style.display = 'none';
+    }
+
+    // Funciones específicas para el formulario de edición
+    function calcularValorCUPDesdeUSDEditar() {
+        const valorUSD = parseFloat(document.getElementById('editar_valor_usd').value) || 0;
+        const tasa = parseFloat(document.getElementById('editar_tasa_visual').value) || 1;
+        document.getElementById('editar_valor_cup').value = (valorUSD * tasa).toFixed(2);
+    }
+
+    function calcularValorUSDDesdeCUPEditar() {
+        const valorCUP = parseFloat(document.getElementById('editar_valor_cup').value) || 0;
+        const tasa = parseFloat(document.getElementById('editar_tasa_visual').value) || 1;
+        document.getElementById('editar_valor_usd').value = (valorCUP / tasa).toFixed(2);
+    }
+
+    function toggleModoUSDEditar() {
+        const establecerUSD = document.getElementById('editar_establecer_usd').checked;
+        const valorUSDInput = document.getElementById('editar_valor_usd');
+
+        if (establecerUSD) {
+            valorUSDInput.readOnly = false;
+            document.getElementById('editar_establecer_cup_salida').checked = false;
+            document.getElementById('editar_valor_cup').readOnly = true;
+        } else {
+            valorUSDInput.readOnly = true;
+            // Si tampoco está en modo CUP, calcular automáticamente
+            if (!document.getElementById('editar_establecer_cup_salida').checked) {
+                calcularValorUSDDesdeCantidadEditar();
+            }
+        }
+    }
+
+    function toggleModoCUPSalidaEditar() {
+        const establecerCUP = document.getElementById('editar_establecer_cup_salida').checked;
+        const valorCUPInput = document.getElementById('editar_valor_cup');
+
+        if (establecerCUP) {
+            valorCUPInput.readOnly = false;
+            document.getElementById('editar_establecer_usd').checked = false;
+            document.getElementById('editar_valor_usd').readOnly = true;
+        } else {
+            valorCUPInput.readOnly = true;
+            // Si tampoco está en modo USD, calcular automáticamente
+            if (!document.getElementById('editar_establecer_usd').checked) {
+                calcularValorUSDDesdeCantidadEditar();
+            }
+        }
+    }
+
+    function toggleModoCUPEditar() {
+        const establecerCUP = document.getElementById('editar_establecer_cup').checked;
+        const valorCUPInput = document.getElementById('editar_valor_cup');
+        const valorUSDInput = document.getElementById('editar_valor_usd');
+
+        if (establecerCUP) {
+            valorCUPInput.readOnly = false;
+            valorUSDInput.readOnly = true;
+        } else {
+            valorCUPInput.readOnly = true;
+            valorUSDInput.readOnly = false;
+        }
+    }
+
+    calcularValorUSDDesdeCantidadEditar
+
+    // Modificar la función validarFechaConTasaEditar para que también obtenga la tasa
+    function validarFechaConTasaEditar(fecha) {
+        const fechasConTasa = <?= json_encode($fechas_con_tasa) ?>;
+        const fechaError = document.getElementById('fecha_error_editar');
+        const tasaInputVisual = document.getElementById('editar_tasa_visual');
+        const tasaInputHidden = document.getElementById('editar_tasa');
+
+        if (!fechasConTasa.includes(fecha)) {
+            fechaError.style.display = 'block';
+            tasaInputVisual.value = '';
+            tasaInputHidden.value = '';
+            return;
+        }
+
+        fechaError.style.display = 'none';
+
+        // Obtener tasa desde el servidor
+        fetch('../../controllers/get_tasa.php?fecha=' + fecha)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    tasaInputVisual.value = data.tasa;
+                    tasaInputHidden.value = data.tasa;
+                    // Recalcular CUP basado en USD actual
+                    calcularValorCUPDesdeUSDEditar();
+                } else {
+                    alert('Error al obtener la tasa: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error al obtener la tasa');
+            });
+    }
+
+    function editarRegistro(numeroOperacion) {
+        // Obtener datos del registro mediante AJAX
+        fetch(`../../controllers/get_registro_tarjeta_estiba.php?numero_operacion=${numeroOperacion}&producto=<?= $producto_id ?>`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Llenar el formulario con los datos
+                    document.getElementById('editar_numero_operacion').value = data.registro.numero_operacion;
+                    document.getElementById('editar_tipo_movimiento').value = data.registro.tipo_movimiento;
+                    document.getElementById('editar_fecha').value = data.registro.fecha;
+                    document.getElementById('editar_cantidad_fisica').value = data.registro.cantidad_fisica;
+                    document.getElementById('editar_valor_usd').value = data.registro.valor_usd;
+                    document.getElementById('editar_desde_para').value = data.registro.desde_para;
+                    document.getElementById('editar_observaciones').value = data.registro.observaciones;
+
+                    const tipoTexto = data.registro.tipo_movimiento === 'entrada' ? 'Entrada' : 'Salida';
+                    document.getElementById('editar_info_operacion').textContent =
+                        `(Operación #${data.registro.numero_operacion} - ${tipoTexto})`;
+
+                    // Mostrar/ocultar controles según el tipo de movimiento
+                    if (data.registro.tipo_movimiento === 'entrada') {
+                        document.getElementById('editar_establecer_cup_container').style.display = 'block';
+                        document.getElementById('editar_establecer_usd_cup_container').style.display = 'none';
+                        document.getElementById('editar_valor_usd').readOnly = false;
+                    } else {
+                        document.getElementById('editar_establecer_cup_container').style.display = 'none';
+                        document.getElementById('editar_establecer_usd_cup_container').style.display = 'block';
+                        document.getElementById('editar_valor_usd').readOnly = true;
+                        document.getElementById('editar_valor_cup').readOnly = true;
+                    }
+
+                    // Llenar select de centros de costo según el tipo
+                    const selectCentro = document.getElementById('editar_desde_para');
+                    selectCentro.innerHTML = '<option value="">Seleccione centro de costo</option>';
+
+                    const centros = data.registro.tipo_movimiento === 'entrada' ?
+                        <?= json_encode($centros_costo_entrada) ?> :
+                        <?= json_encode($centros_costo_salida) ?>;
+
+                    for (const [codigo, nombre] of Object.entries(centros)) {
+                        const option = document.createElement('option');
+                        option.value = codigo;
+                        option.textContent = nombre;
+                        if (codigo == data.registro.desde_para) {
+                            option.selected = true;
+                        }
+                        selectCentro.appendChild(option);
+                    }
+
+                    // Obtener tasa para la fecha y calcular CUP
+                    validarFechaConTasaEditar(data.registro.fecha);
+
+                    // Mostrar formulario de edición
+                    document.getElementById('editarFormContainer').style.display = 'block';
+                    document.getElementById('entradaFormContainer').style.display = 'none';
+                    document.getElementById('salidaFormContainer').style.display = 'none';
+
+                    // Hacer scroll suave hasta el formulario de edición
+                    document.getElementById('editarFormContainer').scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                } else {
+                    alert('Error al cargar los datos del registro: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error al cargar los datos del registro');
+            });
+    }
+
+    // Event listener para el campo cantidad_fisica en edición
+    document.getElementById('editar_cantidad_fisica').addEventListener('input', function() {
+        const tipoMovimiento = document.getElementById('editar_tipo_movimiento').value;
+        const establecerUSD = document.getElementById('editar_establecer_usd')?.checked || false;
+        const establecerCUP = document.getElementById('editar_establecer_cup_salida')?.checked || false;
+
+        // Solo calcular automáticamente si es salida y ninguno de los checkboxes está marcado
+        if (tipoMovimiento === 'salida' && !establecerUSD && !establecerCUP) {
+            calcularValorUSDDesdeCantidadEditar(); // ¡NUEVA FUNCIÓN para edición!
+        }
+    });
+
+    // Event listener para el campo valor_usd en edición (cuando está en modo editable)
+    document.getElementById('editar_valor_usd').addEventListener('input', function() {
+        // Si está en modo USD editable, calcular CUP automáticamente
+        if (document.getElementById('editar_establecer_usd')?.checked) {
+            calcularValorCUPDesdeUSDEditar();
+        }
+    });
+
+    // Event listener para el campo valor_cup en edición (cuando está en modo editable)
+    document.getElementById('editar_valor_cup').addEventListener('input', function() {
+        // Si está en modo CUP editable, calcular USD automáticamente
+        if (document.getElementById('editar_establecer_cup_salida')?.checked ||
+            document.getElementById('editar_establecer_cup')?.checked) {
+            calcularValorUSDDesdeCUPEditar();
+        }
+    });
+    // Función específica para calcular valor USD en edición basado en registro ANTERIOR
+    function calcularValorUSDDesdeCantidadEditar() {
+        const cantidad = parseFloat(document.getElementById('editar_cantidad_fisica').value) || 0;
+        const numeroOperacion = document.getElementById('editar_numero_operacion').value;
+        const producto = <?= $producto_id ?>;
+
+        // Obtener el registro ANTERIOR al que se está editando
+        fetch(`../../controllers/get_registro_anterior.php?numero_operacion=${numeroOperacion}&producto=${producto}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.registro_anterior) {
+                    const saldoFisicoAnterior = parseFloat(data.registro_anterior.saldo_fisico) || 0;
+                    const saldoUSDAnterior = parseFloat(data.registro_anterior.saldo_usd) || 0;
+
+                    // Calcular precio unitario basado en el registro ANTERIOR
+                    let precioUnitario = 0;
+                    if (saldoFisicoAnterior > 0) {
+                        precioUnitario = saldoUSDAnterior / saldoFisicoAnterior;
+                    }
+
+                    const valorUSD = cantidad * precioUnitario;
+                    document.getElementById('editar_valor_usd').value = valorUSD.toFixed(2);
+
+                    // Calcular CUP basado en la tasa actual
+                    const tasa = parseFloat(document.getElementById('editar_tasa_visual').value) || 1;
+                    document.getElementById('editar_valor_cup').value = (valorUSD * tasa).toFixed(2);
+                } else {
+                    console.error('Error al obtener registro anterior:', data.message);
+                    // Fallback: usar cálculo con último registro (función existente)
+                    calcularValorUSDDesdeCantidad();
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                calcularValorUSDDesdeCantidad(); // Fallback
+            });
+    }
 </script>
 
 <?php include('../../templates/footer.php'); ?>
