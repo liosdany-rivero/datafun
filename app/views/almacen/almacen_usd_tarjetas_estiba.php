@@ -2,7 +2,7 @@
 // Iniciar buffer de salida al principio del script
 ob_start();
 /**
- * ARCHIVO: almacen_canal_tarjetas_estiba_usd.php
+ * ARCHIVO: almacen_usd_inventario.php
  * DESCRIPCIÓN: Gestión de tarjetas de estiba USD del sistema
  */
 
@@ -36,7 +36,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['eliminar_registro'])) 
         $conn->begin_transaction();
 
         // Obtener el registro a eliminar
-        $sql_select = "SELECT * FROM almacen_canal_tarjetas_estiba_usd 
+        $sql_select = "SELECT * FROM almacen_usd_inventario 
                       WHERE numero_operacion = ? AND producto = ?";
         $stmt_select = $conn->prepare($sql_select);
         $stmt_select->bind_param("ii", $numero_operacion, $producto);
@@ -49,7 +49,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['eliminar_registro'])) 
         }
 
         // Eliminar el registro
-        $sql_delete = "DELETE FROM almacen_canal_tarjetas_estiba_usd 
+        $sql_delete = "DELETE FROM almacen_usd_inventario 
                       WHERE numero_operacion = ? AND producto = ?";
         $stmt_delete = $conn->prepare($sql_delete);
         $stmt_delete->bind_param("ii", $numero_operacion, $producto);
@@ -61,7 +61,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['eliminar_registro'])) 
 
         // Obtener todos los registros posteriores al número de operación eliminado
         $sql_posteriores = "SELECT numero_operacion, tipo_movimiento, cantidad_fisica, valor_usd 
-                           FROM almacen_canal_tarjetas_estiba_usd 
+                           FROM almacen_usd_inventario 
                            WHERE producto = ? AND numero_operacion > ?
                            ORDER BY numero_operacion ASC";
         $stmt_posteriores = $conn->prepare($sql_posteriores);
@@ -72,7 +72,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['eliminar_registro'])) 
 
         // Obtener el saldo anterior al registro eliminado
         $sql_anterior = "SELECT saldo_fisico, saldo_usd 
-                        FROM almacen_canal_tarjetas_estiba_usd 
+                        FROM almacen_usd_inventario 
                         WHERE producto = ? AND numero_operacion < ?
                         ORDER BY numero_operacion DESC 
                         LIMIT 1";
@@ -108,7 +108,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['eliminar_registro'])) 
             $saldo_usd_actual = round($saldo_usd_actual, 2);
 
             // Actualizar el registro con los nuevos saldos
-            $sql_update = "UPDATE almacen_canal_tarjetas_estiba_usd 
+            $sql_update = "UPDATE almacen_usd_inventario 
                           SET saldo_fisico = ?, saldo_usd = ? 
                           WHERE numero_operacion = ? AND producto = ?";
             $stmt_update = $conn->prepare($sql_update);
@@ -127,7 +127,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['eliminar_registro'])) 
         }
 
         // Actualizar el inventario con el último saldo
-        $sql_inv = "INSERT INTO almacen_canal_inventario_usd 
+        $sql_inv = "INSERT INTO almacen_usd_inventario 
                    (producto, saldo_fisico, valor_usd, fecha_operacion) 
                    VALUES (?, ?, ?, CURDATE())
                    ON DUPLICATE KEY UPDATE 
@@ -153,7 +153,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['eliminar_registro'])) 
     // Regenerar token y redirigir
     unset($_SESSION['csrf_token']);
     ob_clean();
-    header("Location: almacen_canal_tarjetas_estiba_usd.php?producto=$producto");
+    header("Location: almacen_usd_inventario.php?producto=$producto");
     exit();
 }
 
@@ -177,7 +177,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['editar_registro'])) {
     // Validar campos obligatorios
     if (empty($fecha)) {
         $_SESSION['error_msg'] = "⚠️ La fecha es obligatoria";
-        header("Location: almacen_canal_tarjetas_estiba_usd.php?producto=$producto");
+        header("Location: almacen_usd_inventario.php?producto=$producto");
         exit();
     }
 
@@ -190,26 +190,26 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['editar_registro'])) {
 
     if ($result_tasa->num_rows === 0) {
         $_SESSION['error_msg'] = "⚠️ No existe una tasa definida para la fecha seleccionada";
-        header("Location: almacen_canal_tarjetas_estiba_usd.php?producto=$producto");
+        header("Location: almacen_usd_inventario.php?producto=$producto");
         exit();
     }
     $stmt_tasa->close();
 
     if (empty($cantidad_fisica) || $cantidad_fisica <= 0) {
         $_SESSION['error_msg'] = "⚠️ La cantidad física debe ser mayor a 0";
-        header("Location: almacen_canal_tarjetas_estiba_usd.php?producto=$producto");
+        header("Location: almacen_usd_inventario.php?producto=$producto");
         exit();
     }
 
     if (empty($valor_usd) || $valor_usd <= 0) {
         $_SESSION['error_msg'] = "⚠️ El valor USD debe ser mayor a 0";
-        header("Location: almacen_canal_tarjetas_estiba_usd.php?producto=$producto");
+        header("Location: almacen_usd_inventario.php?producto=$producto");
         exit();
     }
 
     if (empty($desde_para)) {
         $_SESSION['error_msg'] = "⚠️ El centro de costo es obligatorio";
-        header("Location: almacen_canal_tarjetas_estiba_usd.php?producto=$producto");
+        header("Location: almacen_usd_inventario.php?producto=$producto");
         exit();
     }
 
@@ -219,7 +219,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['editar_registro'])) {
 
         // Obtener el registro original para comparar
         $sql_original = "SELECT cantidad_fisica, valor_usd, tipo_movimiento 
-                        FROM almacen_canal_tarjetas_estiba_usd 
+                        FROM almacen_usd_inventario 
                         WHERE numero_operacion = ? AND producto = ?";
         $stmt_original = $conn->prepare($sql_original);
         $stmt_original->bind_param("ii", $numero_operacion, $producto);
@@ -232,7 +232,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['editar_registro'])) {
         }
 
         // Actualizar el registro
-        $sql_update = "UPDATE almacen_canal_tarjetas_estiba_usd 
+        $sql_update = "UPDATE almacen_usd_inventario 
                       SET fecha = ?, cantidad_fisica = ?, valor_usd = ?, 
                           desde_para = ?, observaciones = ?, tipo_movimiento = ?
                       WHERE numero_operacion = ? AND producto = ?";
@@ -258,7 +258,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['editar_registro'])) {
         // Recalcular todos los saldos desde este registro en adelante
         // Obtener el saldo anterior al registro editado
         $sql_anterior = "SELECT saldo_fisico, saldo_usd 
-                        FROM almacen_canal_tarjetas_estiba_usd 
+                        FROM almacen_usd_inventario 
                         WHERE producto = ? AND numero_operacion < ?
                         ORDER BY numero_operacion DESC 
                         LIMIT 1";
@@ -281,7 +281,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['editar_registro'])) {
 
         // Obtener todos los registros desde el editado en adelante
         $sql_posteriores = "SELECT numero_operacion, tipo_movimiento, cantidad_fisica, valor_usd 
-                           FROM almacen_canal_tarjetas_estiba_usd 
+                           FROM almacen_usd_inventario 
                            WHERE producto = ? AND numero_operacion >= ?
                            ORDER BY numero_operacion ASC";
         $stmt_posteriores = $conn->prepare($sql_posteriores);
@@ -305,7 +305,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['editar_registro'])) {
             $saldo_usd_actual = round($saldo_usd_actual, 2);
 
             // Actualizar el registro con los nuevos saldos
-            $sql_update_saldo = "UPDATE almacen_canal_tarjetas_estiba_usd 
+            $sql_update_saldo = "UPDATE almacen_usd_inventario 
                                 SET saldo_fisico = ?, saldo_usd = ? 
                                 WHERE numero_operacion = ? AND producto = ?";
             $stmt_update_saldo = $conn->prepare($sql_update_saldo);
@@ -324,7 +324,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['editar_registro'])) {
         }
 
         // Actualizar el inventario con el último saldo
-        $sql_inv = "INSERT INTO almacen_canal_inventario_usd 
+        $sql_inv = "INSERT INTO almacen_usd_inventario 
                    (producto, saldo_fisico, valor_usd, fecha_operacion) 
                    VALUES (?, ?, ?, CURDATE())
                    ON DUPLICATE KEY UPDATE 
@@ -350,7 +350,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['editar_registro'])) {
     // Regenerar token y redirigir
     unset($_SESSION['csrf_token']);
     ob_clean();
-    header("Location: almacen_canal_tarjetas_estiba_usd.php?producto=$producto");
+    header("Location: almacen_usd_inventario.php?producto=$producto");
     exit();
 }
 
@@ -375,13 +375,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && (isset($_POST['save_entrada']) || is
     // Validar campos obligatorios
     if (empty($producto)) {
         $_SESSION['error_msg'] = "⚠️ El producto es obligatorio";
-        header("Location: almacen_canal_tarjetas_estiba_usd.php?producto=$producto_id");
+        header("Location: almacen_usd_inventario.php?producto=$producto_id");
         exit();
     }
 
     if (empty($fecha)) {
         $_SESSION['error_msg'] = "⚠️ La fecha es obligatoria";
-        header("Location: almacen_canal_tarjetas_estiba_usd.php?producto=$producto_id");
+        header("Location: almacen_usd_inventario.php?producto=$producto_id");
         exit();
     }
 
@@ -394,26 +394,26 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && (isset($_POST['save_entrada']) || is
 
     if ($result_tasa->num_rows === 0) {
         $_SESSION['error_msg'] = "⚠️ No existe una tasa definida para la fecha seleccionada";
-        header("Location: almacen_canal_tarjetas_estiba_usd.php?producto=$producto_id");
+        header("Location: almacen_usd_inventario.php?producto=$producto_id");
         exit();
     }
     $stmt_tasa->close();
 
     if (empty($cantidad_fisica) || $cantidad_fisica <= 0) {
         $_SESSION['error_msg'] = "⚠️ La cantidad física debe ser mayor a 0";
-        header("Location: almacen_canal_tarjetas_estiba_usd.php?producto=$producto_id");
+        header("Location: almacen_usd_inventario.php?producto=$producto_id");
         exit();
     }
 
     if (empty($valor_usd) || $valor_usd <= 0) {
         $_SESSION['error_msg'] = "⚠️ El valor USD debe ser mayor a 0";
-        header("Location: almacen_canal_tarjetas_estiba_usd.php?producto=$producto_id");
+        header("Location: almacen_usd_inventario.php?producto=$producto_id");
         exit();
     }
 
     if (empty($desde_para)) {
         $_SESSION['error_msg'] = "⚠️ El centro de costo es obligatorio";
-        header("Location: almacen_canal_tarjetas_estiba_usd.php?producto=$producto_id");
+        header("Location: almacen_usd_inventario.php?producto=$producto_id");
         exit();
     }
 
@@ -423,7 +423,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && (isset($_POST['save_entrada']) || is
 
         // Obtener el saldo del inventario para este producto
         $sql_saldo = "SELECT saldo_fisico, valor_usd 
-                     FROM almacen_canal_inventario_usd 
+                     FROM almacen_usd_inventario 
                      WHERE producto = ?";
         $stmt_saldo = $conn->prepare($sql_saldo);
         $stmt_saldo->bind_param("i", $producto);
@@ -451,7 +451,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && (isset($_POST['save_entrada']) || is
         }
 
         // Insertar en tarjeta de estiba (sin los campos CUP que no existen en la tabla)
-        $sql = "INSERT INTO almacen_canal_tarjetas_estiba_usd 
+        $sql = "INSERT INTO almacen_usd_inventario 
                (producto, fecha, tipo_movimiento, cantidad_fisica, valor_usd, saldo_fisico, saldo_usd, desde_para, observaciones) 
                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
@@ -474,7 +474,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && (isset($_POST['save_entrada']) || is
         }
 
         // Actualizar inventario
-        $sql_inv = "INSERT INTO almacen_canal_inventario_usd 
+        $sql_inv = "INSERT INTO almacen_usd_inventario 
                    (producto, saldo_fisico, valor_usd, fecha_operacion) 
                    VALUES (?, ?, ?, ?)
                    ON DUPLICATE KEY UPDATE 
@@ -508,7 +508,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && (isset($_POST['save_entrada']) || is
     // Regenerar token y redirigir
     unset($_SESSION['csrf_token']);
     ob_clean();
-    header("Location: almacen_canal_tarjetas_estiba_usd.php?producto=$producto");
+    header("Location: almacen_usd_inventario.php?producto=$producto");
     exit();
 }
 
@@ -523,7 +523,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['volver_inventarios']))
     try {
         // Obtener el último movimiento de la tarjeta de estiba
         $sql_ultimo = "SELECT saldo_fisico, saldo_usd, fecha 
-                      FROM almacen_canal_tarjetas_estiba_usd 
+                      FROM almacen_usd_inventario 
                       WHERE producto = ? 
                       ORDER BY numero_operacion DESC 
                       LIMIT 1";
@@ -536,7 +536,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['volver_inventarios']))
 
         if ($ultimo_movimiento) {
             // Actualizar inventario con los últimos saldos
-            $sql_inv = "INSERT INTO almacen_canal_inventario_usd 
+            $sql_inv = "INSERT INTO almacen_usd_inventario 
                        (producto, saldo_fisico, valor_usd, fecha_operacion) 
                        VALUES (?, ?, ?, ?)
                        ON DUPLICATE KEY UPDATE 
@@ -567,7 +567,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['volver_inventarios']))
     // Regenerar token y redirigir a inventarios
     unset($_SESSION['csrf_token']);
     ob_clean();
-    header("Location: almacen_canal_inventario_usd.php");
+    header("Location: almacen_usd_inventario.php");
     exit();
 }
 
@@ -607,7 +607,7 @@ while ($row = mysqli_fetch_assoc($result_centros_salida)) {
 $saldo_actual = ['saldo_fisico' => 0, 'valor_usd' => 0];
 if ($producto_id > 0) {
     $sql_saldo = "SELECT saldo_fisico, valor_usd 
-                 FROM almacen_canal_inventario_usd 
+                 FROM almacen_usd_inventario 
                  WHERE producto = $producto_id";
     $result_saldo = mysqli_query($conn, $sql_saldo);
     if ($result_saldo && $row = mysqli_fetch_assoc($result_saldo)) {
@@ -619,7 +619,7 @@ if ($producto_id > 0) {
 $por_pagina = 15; // Mostrar 15 registros por página
 $total_registros = 0;
 if ($producto_id > 0) {
-    $total_registros = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as total FROM almacen_canal_tarjetas_estiba_usd WHERE producto = $producto_id"))['total'] ?? 0;
+    $total_registros = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as total FROM almacen_usd_inventario WHERE producto = $producto_id"))['total'] ?? 0;
 }
 $total_paginas = max(1, ceil($total_registros / $por_pagina));
 $pagina_actual = isset($_GET['pagina']) ? max(1, intval($_GET['pagina'])) : 1;
@@ -629,7 +629,7 @@ $inicio = ($pagina_actual - 1) * $por_pagina;
 $movimientos = [];
 if ($producto_id > 0) {
     $sql = "SELECT t.*, p.nombre as producto_nombre, c.nombre as centro_nombre 
-            FROM almacen_canal_tarjetas_estiba_usd t 
+            FROM almacen_usd_inventario t 
             LEFT JOIN productos p ON t.producto = p.codigo 
             LEFT JOIN centros_costo c ON t.desde_para = c.codigo 
             WHERE t.producto = $producto_id 
@@ -653,7 +653,7 @@ while ($row = mysqli_fetch_assoc($result_fechas)) {
 $registro_editar = null;
 if (isset($_GET['editar']) && $producto_id > 0) {
     $numero_operacion_editar = (int)$_GET['editar'];
-    $sql_editar = "SELECT * FROM almacen_canal_tarjetas_estiba_usd 
+    $sql_editar = "SELECT * FROM almacen_usd_inventario 
                   WHERE numero_operacion = ? AND producto = ?";
     $stmt_editar = $conn->prepare($sql_editar);
     $stmt_editar->bind_param("ii", $numero_operacion_editar, $producto_id);
@@ -677,7 +677,7 @@ ob_end_flush();
         <!-- Si no hay producto seleccionado, mostrar mensaje y botón para volver -->
         <div class="alert alert-info">
             <p>Por favor, seleccione un producto desde la página de inventarios para gestionar sus tarjetas de estiba.</p>
-            <button onclick="location.href='almacen_canal_inventario_usd.php'" class="btn-primary">Volver a Inventarios</button>
+            <button onclick="location.href='almacen_usd_inventario.php'" class="btn-primary">Volver a Inventarios</button>
         </div>
     <?php endif; ?>
 
@@ -713,7 +713,7 @@ ob_end_flush();
                         <td data-label="Acciones">
                             <div style="display: flex; gap: 5px;">
                                 <button onclick="editarRegistro(<?= $row['numero_operacion'] ?>)" class="btn-warning btn-small">Editar</button>
-                                <form method="POST" action="almacen_canal_tarjetas_estiba_usd.php?producto=<?= $producto_id ?>"
+                                <form method="POST" action="almacen_usd_inventario.php?producto=<?= $producto_id ?>"
                                     class="delete-form" onsubmit="return confirmarEliminacion(this)">
                                     <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
                                     <input type="hidden" name="numero_operacion" value="<?= $row['numero_operacion'] ?>">
@@ -773,7 +773,7 @@ ob_end_flush();
         <!-- Formulario Entrada -->
         <div id="entradaFormContainer" class="sub-form" style="display: none;">
             <h3>Registrar Entrada</h3>
-            <form method="POST" action="almacen_canal_tarjetas_estiba_usd.php?producto=<?= $producto_id ?>" id="entradaForm">
+            <form method="POST" action="almacen_usd_inventario.php?producto=<?= $producto_id ?>" id="entradaForm">
                 <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
                 <input type="hidden" name="producto" value="<?= $producto_id ?>">
 
@@ -827,7 +827,7 @@ ob_end_flush();
         <!-- Formulario Salida -->
         <div id="salidaFormContainer" class="sub-form" style="display: none;">
             <h3>Registrar Salida</h3>
-            <form method="POST" action="almacen_canal_tarjetas_estiba_usd.php?producto=<?= $producto_id ?>">
+            <form method="POST" action="almacen_usd_inventario.php?producto=<?= $producto_id ?>">
                 <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
                 <input type="hidden" name="producto" value="<?= $producto_id ?>">
 
@@ -885,7 +885,7 @@ ob_end_flush();
         <!-- Formulario Edición -->
         <div id="editarFormContainer" class="sub-form" style="display: none;">
             <h3>Editar Registro <span id="editar_info_operacion" style="font-size: 0.8em; color: #666;"></span></h3>
-            <form method="POST" action="almacen_canal_tarjetas_estiba_usd.php?producto=<?= $producto_id ?>" id="editarForm">
+            <form method="POST" action="almacen_usd_inventario.php?producto=<?= $producto_id ?>" id="editarForm">
                 <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
                 <input type="hidden" name="producto" value="<?= $producto_id ?>">
                 <input type="hidden" name="numero_operacion" id="editar_numero_operacion">
@@ -960,7 +960,7 @@ ob_end_flush();
 
 
         <!-- Formulario Volver a Inventarios (oculto) -->
-        <form id="volverForm" method="POST" action="almacen_canal_tarjetas_estiba_usd.php?producto=<?= $producto_id ?>" style="display: none;">
+        <form id="volverForm" method="POST" action="almacen_usd_inventario.php?producto=<?= $producto_id ?>" style="display: none;">
             <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
             <input type="hidden" name="producto" value="<?= $producto_id ?>">
             <input type="hidden" name="volver_inventarios" value="1">
@@ -979,7 +979,7 @@ ob_end_flush();
             <li><button onclick="showEntradaForm()" class="nav-button">+ Entrada</button></li>
             <li><button onclick="showSalidaForm()" class="nav-button">- Salida</button></li>
         <?php else: ?>
-            <li><button onclick="location.href='almacen_canal_inventario_usd.php'" class="nav-button">← Inventarios</button></li>
+            <li><button onclick="location.href='almacen_usd_inventario.php'" class="nav-button">← Inventarios</button></li>
         <?php endif; ?>
     </ul>
 </div>
@@ -1188,7 +1188,7 @@ ob_end_flush();
         const cantidad = parseFloat(document.getElementById('cantidad_fisica_salida').value) || 0;
 
         // Obtener el último registro para este producto
-        fetch('../../controllers/get_ultimo_registro.php?producto=<?= $producto_id ?>')
+        fetch('../../controllers/get_ultimo_registro_almacen_usd.php?producto=<?= $producto_id ?>')
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
@@ -1469,7 +1469,7 @@ ob_end_flush();
 
     function editarRegistro(numeroOperacion) {
         // Obtener datos del registro mediante AJAX
-        fetch(`../../controllers/get_registro_tarjeta_estiba.php?numero_operacion=${numeroOperacion}&producto=<?= $producto_id ?>`)
+        fetch(`../../controllers/get_registro_tarjeta_estiba_almacen_usd.php?numero_operacion=${numeroOperacion}&producto=<?= $producto_id ?>`)
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
@@ -1574,7 +1574,7 @@ ob_end_flush();
         const producto = <?= $producto_id ?>;
 
         // Obtener el registro ANTERIOR al que se está editando
-        fetch(`../../controllers/get_registro_anterior.php?numero_operacion=${numeroOperacion}&producto=${producto}`)
+        fetch(`../../controllers/get_registro_anterior_almacenes_usd.php?numero_operacion=${numeroOperacion}&producto=${producto}`)
             .then(response => response.json())
             .then(data => {
                 if (data.success && data.registro_anterior) {

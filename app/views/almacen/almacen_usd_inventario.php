@@ -2,7 +2,7 @@
 // Iniciar buffer de salida al principio del script
 ob_start();
 /**
- * ARCHIVO: almacen_canal_inventario_usd.php
+ * ARCHIVO: almacen_usd_inventario.php
  * DESCRIPCIÓN: Gestión de inventario USD del sistema
  */
 
@@ -34,7 +34,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['save_inventario'])) {
     // Validar campos obligatorios
     if (empty($producto)) {
         $_SESSION['error_msg'] = "⚠️ El producto es obligatorio";
-        header("Location: almacen_canal_inventario_usd.php");
+        header("Location: almacen_usd_inventario.php");
         exit();
     }
 
@@ -43,7 +43,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['save_inventario'])) {
         $conn->begin_transaction();
 
         // Verificar si el producto ya existe en el inventario
-        $check_sql = "SELECT COUNT(*) as count FROM almacen_canal_inventario_usd WHERE producto = ?";
+        $check_sql = "SELECT COUNT(*) as count FROM almacen_usd_inventario WHERE producto = ?";
         $check_stmt = $conn->prepare($check_sql);
         $check_stmt->bind_param("i", $producto);
         $check_stmt->execute();
@@ -54,7 +54,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['save_inventario'])) {
         if ($row['count'] > 0) {
             // MODE UPDATE - El producto ya existe, actualizamos
             $action = "actualizado";
-            $sql = "UPDATE almacen_canal_inventario_usd SET 
+            $sql = "UPDATE almacen_usd_inventario SET 
                     saldo_fisico = ?,
                     valor_usd = ?,
                     fecha_operacion = ?
@@ -70,7 +70,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['save_inventario'])) {
         } else {
             // MODE CREATE - Insertar nuevo registro
             $action = "creado";
-            $sql = "INSERT INTO almacen_canal_inventario_usd 
+            $sql = "INSERT INTO almacen_usd_inventario 
                    (producto, saldo_fisico, valor_usd, fecha_operacion) 
                    VALUES (?, ?, ?, ?)";
             $stmt = $conn->prepare($sql);
@@ -99,7 +99,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['save_inventario'])) {
     // Regenerar token y redirigir
     unset($_SESSION['csrf_token']);
     ob_clean();
-    header("Location: almacen_canal_inventario_usd.php");
+    header("Location: almacen_usd_inventario.php");
     exit();
 }
 
@@ -113,7 +113,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['delete_inventario'])) 
 
     try {
         // Verificar si el producto tiene tarjetas asociadas
-        $check_sql = "SELECT COUNT(*) as count FROM almacen_canal_tarjetas_estiba_usd WHERE producto = ?";
+        $check_sql = "SELECT COUNT(*) as count FROM almacen_usd_inventario WHERE producto = ?";
         $check_stmt = $conn->prepare($check_sql);
         $check_stmt->bind_param("i", $producto);
         $check_stmt->execute();
@@ -125,7 +125,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['delete_inventario'])) 
             $_SESSION['error_msg'] = "⚠️ No se puede eliminar el inventario porque tiene tarjetas asociadas.";
         } else {
             // Consulta preparada para eliminación segura
-            $sql = "DELETE FROM almacen_canal_inventario_usd WHERE producto = ?";
+            $sql = "DELETE FROM almacen_usd_inventario WHERE producto = ?";
             $stmt = $conn->prepare($sql);
             $stmt->bind_param("i", $producto);
 
@@ -148,7 +148,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['delete_inventario'])) 
     // Regenerar token y redirigir
     unset($_SESSION['csrf_token']);
     ob_clean();
-    header("Location: almacen_canal_inventario_usd.php");
+    header("Location: almacen_usd_inventario.php");
     exit();
 }
 
@@ -158,7 +158,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['delete_inventario'])) 
 $productos = [];
 $sql_productos = "SELECT p.codigo, p.nombre, p.um 
                   FROM productos p 
-                  LEFT JOIN almacen_canal_inventario_usd i ON p.codigo = i.producto 
+                  LEFT JOIN almacen_usd_inventario i ON p.codigo = i.producto 
                   WHERE i.producto IS NULL 
                   ORDER BY p.nombre";
 $result_productos = mysqli_query($conn, $sql_productos);
@@ -168,7 +168,7 @@ while ($row = mysqli_fetch_assoc($result_productos)) {
 
 // Configuración de paginación
 $por_pagina = 15; // Mostrar 15 registros por página
-$total_registros = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as total FROM almacen_canal_inventario_usd"))['total'] ?? 0;
+$total_registros = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as total FROM almacen_usd_inventario"))['total'] ?? 0;
 $total_paginas = max(1, ceil($total_registros / $por_pagina));
 $pagina_actual = isset($_GET['pagina']) ? max(1, intval($_GET['pagina'])) : 1;
 $inicio = ($pagina_actual - 1) * $por_pagina;
@@ -176,7 +176,7 @@ $inicio = ($pagina_actual - 1) * $por_pagina;
 // Consulta paginada
 $inventarios = [];
 $sql = "SELECT i.*, p.nombre as producto_nombre, p.um 
-        FROM almacen_canal_inventario_usd i 
+        FROM almacen_usd_inventario i 
         LEFT JOIN productos p ON i.producto = p.codigo 
         ORDER BY i.fecha_operacion DESC, p.nombre ASC 
         LIMIT $inicio, $por_pagina";
@@ -217,7 +217,7 @@ ob_end_flush();
                     <td data-label>
                         <div class="table-action-buttons">
                             <button onclick="showDeleteForm('<?= $row['producto'] ?>', '<?= htmlspecialchars($row['producto_nombre']) ?>')">Eliminar</button>
-                            <button onclick="location.href='almacen_canal_tarjetas_estiba_usd.php?producto=<?= $row['producto'] ?>'">Tarjetas</button>
+                            <button onclick="location.href='almacen_usd_inventario.php?producto=<?= $row['producto'] ?>'">Tarjetas</button>
                         </div>
                     </td>
                 </tr>
@@ -271,7 +271,7 @@ ob_end_flush();
     <!-- Formulario Crear -->
     <div id="inventarioFormContainer" class="sub-form" style="display: none;">
         <h3>Crear Inventario</h3>
-        <form method="POST" action="almacen_canal_inventario_usd.php">
+        <form method="POST" action="almacen_usd_inventario.php">
             <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
 
             <label for="producto">Producto:</label>
@@ -295,7 +295,7 @@ ob_end_flush();
     <div id="deleteFormContainer" class="sub-form" style="display: none;">
         <h3>¿Eliminar inventario del producto <span id="deleteProductoDisplay"></span>?</h3>
         <p>Esta acción no se puede deshacer.</p>
-        <form method="POST" action="almacen_canal_inventario_usd.php">
+        <form method="POST" action="almacen_usd_inventario.php">
             <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
             <input type="hidden" name="producto" id="delete_producto">
             <div style="display: flex; gap: 10px; margin-top: 20px;">
