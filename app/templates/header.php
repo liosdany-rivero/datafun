@@ -178,7 +178,7 @@ if (isset($_SESSION['user_id'])) {
                         <li class="menu-item-has-children">
                             <a href="javascript:void(0)">Almacenes</a>
                             <ul class="sub-menu">
-                                <li><a href="../almacen/almacen_canal_inventario_usd.php">Almacen Canal USD</a></li>
+                                <li><a href="../almacen/almacen_usd_dashboard.php">Almacenes en USD</a></li>
                             </ul>
                         </li>
                     <?php endif; ?>

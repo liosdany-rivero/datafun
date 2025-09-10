@@ -35,13 +35,106 @@ CREATE TABLE IF NOT EXISTS almacen_canal_tarjetas_estiba_usd (
 ALTER TABLE centros_costo 
 ADD COLUMN E_A_Canal_USD TINYINT(1) DEFAULT 0,
 ADD COLUMN S_A_Canal_USD TINYINT(1) DEFAULT 0;
+ADD COLUMN Almacen_USD TINYINT(1) DEFAULT 0 COMMENT 'Almacén USD (1: Sí, 0: No)';
 
+-- 5. Cambio del nombre de tablas
+RENAME TABLE 
+    almacen_canal_tarjetas_estiba_usd TO almacen_usd_tarjetas_estiba,
+    almacen_canal_inventario_usd TO almacen_usd_inventario;
 
+-- 6. Insertando almacenes en USD en la base de datos
+INSERT INTO centros_costo (
+    codigo, 
+    nombre, 
+    Establecimiento, 
+    E_Caja_Princ, 
+    S_Caja_Princ, 
+    E_Caja_Panad, 
+    S_Caja_Panad, 
+    E_Caja_Trinid, 
+    S_Caja_Trinid, 
+    E_Caja_Gallet, 
+    S_Caja_Gallet, 
+    E_Caja_Cochi, 
+    S_Caja_Cochi, 
+    Modulo, 
+    E_A_Canal_USD, 
+    S_A_Canal_USD, 
+    Almacen_USD
+) VALUES 
+-- Almacén Canal
+(
+    700, 
+    'Almacén Canal', 
+    0, 
+    0, 
+    0, 
+    0, 
+    0, 
+    0, 
+    0, 
+    0, 
+    0, 
+    0, 
+    0, 
+    NULL, 
+    0, 
+    0, 
+    1
+),
+-- Almacén Terminal
+(
+    640, 
+    'Almacén Terminal', 
+    0, 
+    0, 
+    0, 
+    0, 
+    0, 
+    0, 
+    0, 
+    0, 
+    0, 
+    0, 
+    0, 
+    NULL, 
+    0, 
+    0, 
+    1
+),
+-- Almacén Mayorista
+(
+    780, 
+    'Almacén Mayorista', 
+    0, 
+    0, 
+    0, 
+    0, 
+    0, 
+    0, 
+    0, 
+    0, 
+    0, 
+    0, 
+    0, 
+    NULL, 
+    0, 
+    0, 
+    1
+);
 
-
-
-
-
+-- 7. Insertar registros en la tabla permisos
+INSERT INTO permisos (
+    user_id,
+    centro_costo_codigo,
+    permiso
+) VALUES 
+(1, 640, 'escribir'),
+(1, 700, 'escribir'),
+(1, 780, 'escribir'),
+(10, 640, 'tramitar'),
+(10, 700, 'tramitar'),
+(10, 780, 'tramitar');
 
 
 
