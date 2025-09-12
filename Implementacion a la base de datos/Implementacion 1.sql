@@ -6,7 +6,7 @@ CREATE TABLE IF NOT EXISTS productos (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- 2. Crear tabla almacen_canal_inventario_usd (MODIFICADA)
-CREATE TABLE IF NOT EXISTS almacen_canal_inventario_usd (
+CREATE TABLE IF NOT EXISTS almacen_usd_inventario (
   producto BIGINT NOT NULL PRIMARY KEY,
   saldo_fisico DECIMAL(15,3) NOT NULL DEFAULT 0.000,
   valor_usd DECIMAL(15,2) NOT NULL DEFAULT 0.00,
@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS almacen_canal_inventario_usd (
 
 
 -- 3. Crear tabla tarjetas_estiba_usd
-CREATE TABLE IF NOT EXISTS almacen_canal_tarjetas_estiba_usd (
+CREATE TABLE IF NOT EXISTS almacen_usd_tarjetas_estiba (
   numero_operacion INT AUTO_INCREMENT PRIMARY KEY,
   producto BIGINT NOT NULL,
   fecha DATE NOT NULL,
@@ -34,13 +34,8 @@ CREATE TABLE IF NOT EXISTS almacen_canal_tarjetas_estiba_usd (
 -- 4. Añadir nuevas columnas a centros_costo
 ALTER TABLE centros_costo 
 ADD COLUMN E_A_Canal_USD TINYINT(1) DEFAULT 0,
-ADD COLUMN S_A_Canal_USD TINYINT(1) DEFAULT 0;
+ADD COLUMN S_A_Canal_USD TINYINT(1) DEFAULT 0,
 ADD COLUMN Almacen_USD TINYINT(1) DEFAULT 0 COMMENT 'Almacén USD (1: Sí, 0: No)';
-
--- 5. Cambio del nombre de tablas
-RENAME TABLE 
-    almacen_canal_tarjetas_estiba_usd TO almacen_usd_tarjetas_estiba,
-    almacen_canal_inventario_usd TO almacen_usd_inventario;
 
 -- 6. Insertando almacenes en USD en la base de datos
 INSERT INTO centros_costo (
@@ -101,26 +96,6 @@ INSERT INTO centros_costo (
     0, 
     0, 
     1
-),
--- Almacén Mayorista
-(
-    780, 
-    'Almacén Mayorista', 
-    0, 
-    0, 
-    0, 
-    0, 
-    0, 
-    0, 
-    0, 
-    0, 
-    0, 
-    0, 
-    0, 
-    NULL, 
-    0, 
-    0, 
-    1
 );
 
 -- 7. Insertar registros en la tabla permisos
@@ -131,10 +106,8 @@ INSERT INTO permisos (
 ) VALUES 
 (1, 640, 'escribir'),
 (1, 700, 'escribir'),
-(1, 780, 'escribir'),
 (10, 640, 'tramitar'),
-(10, 700, 'tramitar'),
-(10, 780, 'tramitar');
+(10, 700, 'tramitar');
 
 
 
