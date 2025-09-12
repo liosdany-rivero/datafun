@@ -228,6 +228,68 @@ $result = mysqli_query($conn, $sql);
 while ($row = mysqli_fetch_assoc($result)) {
     $centros_costo[] = $row;
 }
+
+// SECCIÓN 3.1: ACTUALIZACIÓN DIRECTA DE CHECKBOXES
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update_checkbox'])) {
+    // Validación CSRF
+    if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
+        die("Token CSRF inválido");
+    }
+
+    // Recoger datos
+    $codigo = (int)$_POST['codigo'];
+    $campo = $_POST['campo'];
+    $valor = isset($_POST['valor']) && $_POST['valor'] === 'on' ? 1 : 0;
+
+    // Validar campo permitido - LISTA COMPLETA
+    $campos_permitidos = [
+        'Establecimiento',
+        'E_Caja_Princ',
+        'S_Caja_Princ',
+        'E_Caja_Panad',
+        'S_Caja_Panad',
+        'E_Caja_Trinid',
+        'S_Caja_Trinid',
+        'E_Caja_Gallet',
+        'S_Caja_Gallet',
+        'E_Caja_Cochi',
+        'S_Caja_Cochi',
+        'Modulo',
+        'E_Almacen_USD',
+        'S_Almacen_USD',
+        'Almacen_USD'
+    ];
+
+    if (!in_array($campo, $campos_permitidos)) {
+        die("Campo no permitido");
+    }
+
+    try {
+        // Usar consulta preparada con placeholder para el nombre del campo
+        $sql = "UPDATE centros_costo SET `$campo` = ? WHERE codigo = ?";
+        $stmt = $conn->prepare($sql);
+
+        if (!$stmt) {
+            throw new Exception("Error preparando consulta: " . $conn->error);
+        }
+
+        $stmt->bind_param("ii", $valor, $codigo);
+
+        if ($stmt->execute()) {
+            $_SESSION['success_msg'] = "✅ Campo actualizado correctamente";
+        } else {
+            $_SESSION['error_msg'] = "⚠️ Error al actualizar: " . $stmt->error;
+        }
+        $stmt->close();
+    } catch (Exception $e) {
+        $_SESSION['error_msg'] = "⚠️ Error: " . $e->getMessage();
+    }
+
+    // Redirigir para evitar reenvío del formulario
+    header("Location: centros_costo.php");
+    exit();
+}
+
 ob_end_flush();
 ?>
 
@@ -269,21 +331,174 @@ ob_end_flush();
                     <td data-label="Centro costo"><?= htmlspecialchars($row['nombre']) ?></td>
 
                     <!-- Campos booleanos como emojis (✅/❌) SOLO LECTURA -->
-                    <td data-label="Establecimiento"><?= $row['Establecimiento'] ? '✅' : '❌' ?></td>
-                    <td data-label="E Caja Princ"><?= $row['E_Caja_Princ'] ? '✅' : '❌' ?></td>
-                    <td data-label="S Caja Princ"><?= $row['S_Caja_Princ'] ? '✅' : '❌' ?></td>
-                    <td data-label="E Caja Panad"><?= $row['E_Caja_Panad'] ? '✅' : '❌' ?></td>
-                    <td data-label="S Caja Panad"><?= $row['S_Caja_Panad'] ? '✅' : '❌' ?></td>
-                    <td data-label="E Caja Trinid"><?= $row['E_Caja_Trinid'] ? '✅' : '❌' ?></td>
-                    <td data-label="S Caja Trinid"><?= $row['S_Caja_Trinid'] ? '✅' : '❌' ?></td>
-                    <td data-label="E Caja Gallet"><?= $row['E_Caja_Gallet'] ? '✅' : '❌' ?></td>
-                    <td data-label="S Caja Gallet"><?= $row['S_Caja_Gallet'] ? '✅' : '❌' ?></td>
-                    <td data-label="E Caja Cochi"><?= $row['E_Caja_Cochi'] ? '✅' : '❌' ?></td>
-                    <td data-label="S Caja Cochi"><?= $row['S_Caja_Cochi'] ? '✅' : '❌' ?></td>
-                    <td data-label="Módulo"><?= $row['Modulo'] ? '✅' : '❌' ?></td>
-                    <td data-label="E Alm USD"><?= $row['E_Almacen_USD'] ? '✅' : '❌' ?></td>
-                    <td data-label="S Alm USD"><?= $row['S_Almacen_USD'] ? '✅' : '❌' ?></td>
-                    <td data-label="Alm USD"><?= $row['Almacen_USD'] ? '✅' : '❌' ?></td>
+                    <?php ?>
+                    <!-- Campos booleanos como checkboxes dentro de formularios -->
+                    <td data-label="Establecimiento">
+                        <form method="POST" action="centros_costo.php" class="checkbox-form">
+                            <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
+                            <input type="hidden" name="update_checkbox" value="true">
+                            <input type="hidden" name="codigo" value="<?= $row['codigo'] ?>">
+                            <input type="hidden" name="campo" value="Establecimiento">
+                            <input type="checkbox" class="editable-checkbox"
+                                onchange="handleCheckboxChange(this)"
+                                <?= $row['Establecimiento'] ? 'checked' : '' ?>>
+                        </form>
+                    </td>
+                    <td data-label="E Caja Princ">
+                        <form method="POST" action="centros_costo.php" class="checkbox-form">
+                            <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
+                            <input type="hidden" name="update_checkbox" value="true">
+                            <input type="hidden" name="codigo" value="<?= $row['codigo'] ?>">
+                            <input type="hidden" name="campo" value="E_Caja_Princ">
+                            <input type="checkbox" class="editable-checkbox"
+                                onchange="handleCheckboxChange(this)"
+                                <?= $row['E_Caja_Princ'] ? 'checked' : '' ?>>
+                        </form>
+                    </td>
+                    <td data-label="S Caja Princ">
+                        <form method="POST" action="centros_costo.php" class="checkbox-form">
+                            <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
+                            <input type="hidden" name="update_checkbox" value="true">
+                            <input type="hidden" name="codigo" value="<?= $row['codigo'] ?>">
+                            <input type="hidden" name="campo" value="S_Caja_Princ">
+                            <input type="checkbox" class="editable-checkbox"
+                                onchange="handleCheckboxChange(this)"
+                                <?= $row['S_Caja_Princ'] ? 'checked' : '' ?>>
+                        </form>
+                    </td>
+                    <td data-label="E Caja Panad">
+                        <form method="POST" action="centros_costo.php" class="checkbox-form">
+                            <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
+                            <input type="hidden" name="update_checkbox" value="true">
+                            <input type="hidden" name="codigo" value="<?= $row['codigo'] ?>">
+                            <input type="hidden" name="campo" value="E_Caja_Panad">
+                            <input type="checkbox" class="editable-checkbox"
+                                onchange="handleCheckboxChange(this)"
+                                <?= $row['E_Caja_Panad'] ? 'checked' : '' ?>>
+                        </form>
+                    </td>
+                    <td data-label="S Caja Panad">
+                        <form method="POST" action="centros_costo.php" class="checkbox-form">
+                            <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
+                            <input type="hidden" name="update_checkbox" value="true">
+                            <input type="hidden" name="codigo" value="<?= $row['codigo'] ?>">
+                            <input type="hidden" name="campo" value="S_Caja_Panad">
+                            <input type="checkbox" class="editable-checkbox"
+                                onchange="handleCheckboxChange(this)"
+                                <?= $row['S_Caja_Panad'] ? 'checked' : '' ?>>
+                        </form>
+                    </td>
+                    <td data-label="E Caja Trinid">
+                        <form method="POST" action="centros_costo.php" class="checkbox-form">
+                            <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
+                            <input type="hidden" name="update_checkbox" value="true">
+                            <input type="hidden" name="codigo" value="<?= $row['codigo'] ?>">
+                            <input type="hidden" name="campo" value="E_Caja_Trinid">
+                            <input type="checkbox" class="editable-checkbox"
+                                onchange="handleCheckboxChange(this)"
+                                <?= $row['E_Caja_Trinid'] ? 'checked' : '' ?>>
+                        </form>
+                    </td>
+                    <td data-label="S Caja Trinid">
+                        <form method="POST" action="centros_costo.php" class="checkbox-form">
+                            <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
+                            <input type="hidden" name="update_checkbox" value="true">
+                            <input type="hidden" name="codigo" value="<?= $row['codigo'] ?>">
+                            <input type="hidden" name="campo" value="S_Caja_Trinid">
+                            <input type="checkbox" class="editable-checkbox"
+                                onchange="handleCheckboxChange(this)"
+                                <?= $row['S_Caja_Trinid'] ? 'checked' : '' ?>>
+                        </form>
+                    </td>
+                    <td data-label="E Caja Gallet">
+                        <form method="POST" action="centros_costo.php" class="checkbox-form">
+                            <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
+                            <input type="hidden" name="update_checkbox" value="true">
+                            <input type="hidden" name="codigo" value="<?= $row['codigo'] ?>">
+                            <input type="hidden" name="campo" value="E_Caja_Gallet">
+                            <input type="checkbox" class="editable-checkbox"
+                                onchange="handleCheckboxChange(this)"
+                                <?= $row['E_Caja_Gallet'] ? 'checked' : '' ?>>
+                        </form>
+                    </td>
+                    <td data-label="S Caja Gallet">
+                        <form method="POST" action="centros_costo.php" class="checkbox-form">
+                            <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
+                            <input type="hidden" name="update_checkbox" value="true">
+                            <input type="hidden" name="codigo" value="<?= $row['codigo'] ?>">
+                            <input type="hidden" name="campo" value="S_Caja_Gallet">
+                            <input type="checkbox" class="editable-checkbox"
+                                onchange="handleCheckboxChange(this)"
+                                <?= $row['S_Caja_Gallet'] ? 'checked' : '' ?>>
+                        </form>
+                    </td>
+                    <td data-label="E Caja Cochi">
+                        <form method="POST" action="centros_costo.php" class="checkbox-form">
+                            <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
+                            <input type="hidden" name="update_checkbox" value="true">
+                            <input type="hidden" name="codigo" value="<?= $row['codigo'] ?>">
+                            <input type="hidden" name="campo" value="E_Caja_Cochi">
+                            <input type="checkbox" class="editable-checkbox"
+                                onchange="handleCheckboxChange(this)"
+                                <?= $row['E_Caja_Cochi'] ? 'checked' : '' ?>>
+                        </form>
+                    </td>
+                    <td data-label="S Caja Cochi">
+                        <form method="POST" action="centros_costo.php" class="checkbox-form">
+                            <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
+                            <input type="hidden" name="update_checkbox" value="true">
+                            <input type="hidden" name="codigo" value="<?= $row['codigo'] ?>">
+                            <input type="hidden" name="campo" value="S_Caja_Cochi">
+                            <input type="checkbox" class="editable-checkbox"
+                                onchange="handleCheckboxChange(this)"
+                                <?= $row['S_Caja_Cochi'] ? 'checked' : '' ?>>
+                        </form>
+                    </td>
+                    <td data-label="Módulo">
+                        <form method="POST" action="centros_costo.php" class="checkbox-form">
+                            <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
+                            <input type="hidden" name="update_checkbox" value="true">
+                            <input type="hidden" name="codigo" value="<?= $row['codigo'] ?>">
+                            <input type="hidden" name="campo" value="Modulo">
+                            <input type="checkbox" class="editable-checkbox"
+                                onchange="handleCheckboxChange(this)"
+                                <?= $row['Modulo'] ? 'checked' : '' ?>>
+                        </form>
+                    </td>
+                    <td data-label="E Alm USD">
+                        <form method="POST" action="centros_costo.php" class="checkbox-form">
+                            <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
+                            <input type="hidden" name="update_checkbox" value="true">
+                            <input type="hidden" name="codigo" value="<?= $row['codigo'] ?>">
+                            <input type="hidden" name="campo" value="E_Almacen_USD">
+                            <input type="checkbox" class="editable-checkbox"
+                                onchange="handleCheckboxChange(this)"
+                                <?= $row['E_Almacen_USD'] ? 'checked' : '' ?>>
+                        </form>
+                    </td>
+                    <td data-label="S Alm USD">
+                        <form method="POST" action="centros_costo.php" class="checkbox-form">
+                            <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
+                            <input type="hidden" name="update_checkbox" value="true">
+                            <input type="hidden" name="codigo" value="<?= $row['codigo'] ?>">
+                            <input type="hidden" name="campo" value="S_Almacen_USD">
+                            <input type="checkbox" class="editable-checkbox"
+                                onchange="handleCheckboxChange(this)"
+                                <?= $row['S_Almacen_USD'] ? 'checked' : '' ?>>
+                        </form>
+                    </td>
+                    <td data-label="Alm USD">
+                        <form method="POST" action="centros_costo.php" class="checkbox-form">
+                            <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
+                            <input type="hidden" name="update_checkbox" value="true">
+                            <input type="hidden" name="codigo" value="<?= $row['codigo'] ?>">
+                            <input type="hidden" name="campo" value="Almacen_USD">
+                            <input type="checkbox" class="editable-checkbox"
+                                onchange="handleCheckboxChange(this)"
+                                <?= $row['Almacen_USD'] ? 'checked' : '' ?>>
+                        </form>
+                    </td>
+                    <?php ?>
 
                     <td data-label>
                         <div class="table-action-buttons">
@@ -576,6 +791,44 @@ ob_end_flush();
     function scrollToBottom() {
         window.scrollTo(0, document.body.scrollHeight);
     }
+
+    // === CÓDIGO NUEVO A AGREGAR ===
+    /**
+     * Maneja el cambio de estado de los checkboxes en la tabla
+     * @param {HTMLElement} checkbox - El checkbox que fue cambiado
+     */
+    function handleCheckboxChange(checkbox) {
+        const form = checkbox.closest('form');
+        const formData = new FormData(form);
+
+        // Agregar el valor actual del checkbox al FormData
+        formData.set('valor', checkbox.checked ? 'on' : 'off');
+
+        // Enviar el formulario mediante AJAX
+        fetch('centros_costo.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.text())
+            .then(data => {
+                // No recargar la página, solo mostrar notificación si es necesario
+                console.log('Checkbox actualizado correctamente');
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                // Revertir el cambio en caso de error
+                checkbox.checked = !checkbox.checked;
+                alert('Error al actualizar el checkbox. Intente nuevamente.');
+            });
+    }
+    // === FIN DE CÓDIGO NUEVO ===
+
+    /**
+     * Muestra formulario de creación
+     * - Restablece campos
+     * - Muestra el contenedor
+     * - Hace scroll al final
+     */
 </script>
 
 <?php include('../../templates/footer.php'); ?>

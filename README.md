@@ -5,6 +5,7 @@
 ---
 
 ## 🚀 Objetivo del abierto
+
 Centralizar la gestión empresarial en un entorno eficiente, adaptable.  
 DataFun busca eliminar la fragmentación entre departamentos, automatizar procesos clave y ofrecer una experiencia clara tanto para usuarios técnicos como administrativos.
 
@@ -12,7 +13,7 @@ DataFun busca eliminar la fragmentación entre departamentos, automatizar proces
 
 ## ⚙️ Tecnologías utilizadas
 
-- **Frontend**: HTML, CSS, JavaScript (Vanilla o framework según evolución)
+- **Frontend**: HTML, CSS, JavaScript
 - **Backend**: PHP + MySQL (estructura modular)
 - **Automatización**: Bash scripts para instalación y mantenimiento
 - **Compatibilidad**: Linux, Android (Termux), integración con GitHub
