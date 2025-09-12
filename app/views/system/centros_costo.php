@@ -306,7 +306,7 @@ ob_end_flush();
             <tr>
                 <th>Código</th>
                 <th>Nombre</th>
-                <th>Establecimiento</th>
+                <th>Estab.</th>
                 <th>E Caja Princ</th>
                 <th>S Caja Princ</th>
                 <th>E Caja Panad</th>
