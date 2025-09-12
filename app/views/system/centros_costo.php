@@ -61,6 +61,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['save_centro_costo'])) 
     $E_Caja_Cochi = isset($_POST['E_Caja_Cochi']) ? 1 : 0;
     $S_Caja_Cochi = isset($_POST['S_Caja_Cochi']) ? 1 : 0;
     $Modulo = isset($_POST['Modulo']) ? 1 : 0;
+    $E_Almacen_USD = isset($_POST['E_Almacen_USD']) ? 1 : 0;
+    $S_Almacen_USD = isset($_POST['S_Almacen_USD']) ? 1 : 0;
+    $Almacen_USD = isset($_POST['Almacen_USD']) ? 1 : 0;
 
     // Verificar si estamos en modo creación o edición
     $is_edit = isset($_POST['edit_mode']) && $_POST['edit_mode'] === 'true';
@@ -73,26 +76,28 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['save_centro_costo'])) 
         if ($is_edit) {
             // MODE EDIT - Usamos UPDATE en lugar de REPLACE
             $action = "actualizado";
-
             $sql = "UPDATE centros_costo SET 
-                    nombre = ?, 
-                    Establecimiento = ?, 
-                    E_Caja_Princ = ?, 
-                    S_Caja_Princ = ?, 
-                    E_Caja_Panad = ?, 
-                    S_Caja_Panad = ?, 
-                    E_Caja_Trinid = ?, 
-                    S_Caja_Trinid = ?, 
-                    E_Caja_Gallet = ?, 
-                    S_Caja_Gallet = ?, 
-                    E_Caja_Cochi = ?, 
-                    S_Caja_Cochi = ?,
-                    Modulo = ?
-                    WHERE codigo = ?";
+        nombre = ?, 
+        Establecimiento = ?, 
+        E_Caja_Princ = ?, 
+        S_Caja_Princ = ?, 
+        E_Caja_Panad = ?, 
+        S_Caja_Panad = ?, 
+        E_Caja_Trinid = ?, 
+        S_Caja_Trinid = ?, 
+        E_Caja_Gallet = ?, 
+        S_Caja_Gallet = ?, 
+        E_Caja_Cochi = ?, 
+        S_Caja_Cochi = ?,
+        Modulo = ?,
+        E_Almacen_USD = ?,
+        S_Almacen_USD = ?,
+        Almacen_USD = ?
+        WHERE codigo = ?";
 
             $stmt = $conn->prepare($sql);
             $stmt->bind_param(
-                "siiiiiiiiiiiii",
+                "siiiiiiiiiiiiiiii",
                 $nombre,
                 $Establecimiento,
                 $E_Caja_Princ,
@@ -106,6 +111,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['save_centro_costo'])) 
                 $E_Caja_Cochi,
                 $S_Caja_Cochi,
                 $Modulo,
+                $E_Almacen_USD,
+                $S_Almacen_USD,
+                $Almacen_USD,
                 $codigo
             );
         } else {
@@ -123,9 +131,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['save_centro_costo'])) 
             $check_stmt->close();
 
             $sql = "INSERT INTO centros_costo 
-                   (codigo, nombre, Establecimiento, E_Caja_Princ, S_Caja_Princ, E_Caja_Panad, S_Caja_Panad, 
-                   E_Caja_Trinid, S_Caja_Trinid, E_Caja_Gallet, S_Caja_Gallet, E_Caja_Cochi, S_Caja_Cochi, Modulo) 
-                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+       (codigo, nombre, Establecimiento, E_Caja_Princ, S_Caja_Princ, E_Caja_Panad, S_Caja_Panad, 
+       E_Caja_Trinid, S_Caja_Trinid, E_Caja_Gallet, S_Caja_Gallet, E_Caja_Cochi, S_Caja_Cochi, Modulo,
+       E_Almacen_USD, S_Almacen_USD, Almacen_USD) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
             $stmt = $conn->prepare($sql);
             $stmt->bind_param(
@@ -247,6 +256,9 @@ ob_end_flush();
                 <th>E Caja Cochi</th>
                 <th>S Caja Cochi</th>
                 <th>Módulo</th>
+                <th>E Alm USD</th>
+                <th>S Alm USD</th>
+                <th>Alm USD</th>
                 <th>Acciones</th>
             </tr>
         </thead>
@@ -269,25 +281,31 @@ ob_end_flush();
                     <td data-label="E Caja Cochi"><?= $row['E_Caja_Cochi'] ? '✅' : '❌' ?></td>
                     <td data-label="S Caja Cochi"><?= $row['S_Caja_Cochi'] ? '✅' : '❌' ?></td>
                     <td data-label="Módulo"><?= $row['Modulo'] ? '✅' : '❌' ?></td>
+                    <td data-label="E Alm USD"><?= $row['E_Almacen_USD'] ? '✅' : '❌' ?></td>
+                    <td data-label="S Alm USD"><?= $row['S_Almacen_USD'] ? '✅' : '❌' ?></td>
+                    <td data-label="Alm USD"><?= $row['Almacen_USD'] ? '✅' : '❌' ?></td>
 
                     <td data-label>
                         <div class="table-action-buttons">
                             <button onclick="showEditForm(
-                                '<?= $row['codigo'] ?>', 
-                                '<?= htmlspecialchars($row['nombre']) ?>',
-                                '<?= $row['Establecimiento'] ?>',
-                                '<?= $row['E_Caja_Princ'] ?>',
-                                '<?= $row['S_Caja_Princ'] ?>',
-                                '<?= $row['E_Caja_Panad'] ?>',
-                                '<?= $row['S_Caja_Panad'] ?>',
-                                '<?= $row['E_Caja_Trinid'] ?>',
-                                '<?= $row['S_Caja_Trinid'] ?>',
-                                '<?= $row['E_Caja_Gallet'] ?>',
-                                '<?= $row['S_Caja_Gallet'] ?>',
-                                '<?= $row['E_Caja_Cochi'] ?>',
-                                '<?= $row['S_Caja_Cochi'] ?>',
-                                '<?= $row['Modulo'] ?>'
-                            )">Editar</button>
+    '<?= $row['codigo'] ?>', 
+    '<?= htmlspecialchars($row['nombre']) ?>',
+    '<?= $row['Establecimiento'] ?>',
+    '<?= $row['E_Caja_Princ'] ?>',
+    '<?= $row['S_Caja_Princ'] ?>',
+    '<?= $row['E_Caja_Panad'] ?>',
+    '<?= $row['S_Caja_Panad'] ?>',
+    '<?= $row['E_Caja_Trinid'] ?>',
+    '<?= $row['S_Caja_Trinid'] ?>',
+    '<?= $row['E_Caja_Gallet'] ?>',
+    '<?= $row['S_Caja_Gallet'] ?>',
+    '<?= $row['E_Caja_Cochi'] ?>',
+    '<?= $row['S_Caja_Cochi'] ?>',
+    '<?= $row['Modulo'] ?>',
+    '<?= $row['E_Almacen_USD'] ?>',
+    '<?= $row['S_Almacen_USD'] ?>',
+    '<?= $row['Almacen_USD'] ?>'
+)">Editar</button>
                             <button onclick="showDeleteForm('<?= $row['codigo'] ?>', '<?= htmlspecialchars($row['nombre']) ?>')">Eliminar</button>
                         </div>
                     </td>
@@ -413,6 +431,21 @@ ob_end_flush();
                 Módulo
             </label>
 
+            <label class="checkbox-container">
+                <input type="checkbox" id="E_Almacen_USD" name="E_Almacen_USD" value="1" />
+                Entrada Almacén USD
+            </label>
+
+            <label class="checkbox-container">
+                <input type="checkbox" id="S_Almacen_USD" name="S_Almacen_USD" value="1" />
+                Salida Almacén USD
+            </label>
+
+            <label class="checkbox-container">
+                <input type="checkbox" id="Almacen_USD" name="Almacen_USD" value="1" />
+                Almacén USD
+            </label>
+
             <div style="display: flex; gap: 10px; margin-top: 20px;">
                 <button type="submit" name="save_centro_costo" class="btn-primary">Guardar</button>
                 <button type="button" onclick="hideForms()" class="btn-primary">Cancelar</button>
@@ -481,7 +514,8 @@ ob_end_flush();
      * @param {boolean} Modulo - Estado checkbox
      */
     function showEditForm(codigo, nombre, Establecimiento, E_Caja_Princ, S_Caja_Princ, E_Caja_Panad, S_Caja_Panad,
-        E_Caja_Trinid, S_Caja_Trinid, E_Caja_Gallet, S_Caja_Gallet, E_Caja_Cochi, S_Caja_Cochi, Modulo) {
+        E_Caja_Trinid, S_Caja_Trinid, E_Caja_Gallet, S_Caja_Gallet, E_Caja_Cochi, S_Caja_Cochi, Modulo,
+        E_Almacen_USD, S_Almacen_USD, Almacen_USD) {
         hideForms();
         document.getElementById('formTitle').textContent = 'Editar Centro de Costo';
         document.getElementById('edit_mode').value = 'true';
@@ -500,6 +534,9 @@ ob_end_flush();
         document.getElementById('E_Caja_Cochi').checked = E_Caja_Cochi == '1';
         document.getElementById('S_Caja_Cochi').checked = S_Caja_Cochi == '1';
         document.getElementById('Modulo').checked = Modulo == '1';
+        document.getElementById('E_Almacen_USD').checked = E_Almacen_USD == '1';
+        document.getElementById('S_Almacen_USD').checked = S_Almacen_USD == '1';
+        document.getElementById('Almacen_USD').checked = Almacen_USD == '1';
         document.getElementById('centroCostoFormContainer').style.display = 'block';
         scrollToBottom();
     }
