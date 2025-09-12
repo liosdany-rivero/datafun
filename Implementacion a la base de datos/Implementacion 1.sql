@@ -33,8 +33,8 @@ CREATE TABLE IF NOT EXISTS almacen_usd_tarjetas_estiba (
 
 -- 4. Añadir nuevas columnas a centros_costo
 ALTER TABLE centros_costo 
-ADD COLUMN E_A_Canal_USD TINYINT(1) DEFAULT 0,
-ADD COLUMN S_A_Canal_USD TINYINT(1) DEFAULT 0,
+ADD COLUMN E_Almacen_USD TINYINT(1) DEFAULT 0,
+ADD COLUMN S_Almacen_USD TINYINT(1) DEFAULT 0,
 ADD COLUMN Almacen_USD TINYINT(1) DEFAULT 0 COMMENT 'Almacén USD (1: Sí, 0: No)';
 
 -- 6. Insertando almacenes en USD en la base de datos
@@ -53,8 +53,8 @@ INSERT INTO centros_costo (
     E_Caja_Cochi, 
     S_Caja_Cochi, 
     Modulo, 
-    E_A_Canal_USD, 
-    S_A_Canal_USD, 
+    E_Almacen_USD, 
+    S_Almacen_USD, 
     Almacen_USD
 ) VALUES 
 -- Almacén Canal
@@ -110,6 +110,26 @@ INSERT INTO permisos (
 (10, 700, 'tramitar');
 
 
+-- MODIFICACIÓN: Agregar campo almacen_id a la tabla almacen_canal_inventario_usd
+ALTER TABLE almacen_usd_inventario 
+ADD COLUMN almacen_id INT(11) NOT NULL AFTER producto,
+ADD FOREIGN KEY (almacen_id) REFERENCES centros_costo(codigo) ON DELETE RESTRICT ON UPDATE CASCADE,
+DROP PRIMARY KEY,
+ADD PRIMARY KEY (producto, almacen_id);
 
+-- MODIFICACIÓN: Agregar campo almacen_id a la tabla almacen_canal_tarjetas_estiba_usd
+ALTER TABLE almacen_usd_tarjetas_estiba 
+ADD COLUMN almacen_id INT(11) NOT NULL AFTER producto,
+ADD FOREIGN KEY (almacen_id) REFERENCES centros_costo(codigo) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+INSERT INTO productos (nombre, um) VALUES
+('Grasa', 'Cubetas 15kg'),
+('Sal', 'Sacos'),
+('Grasa', 'Kg'),
+('Nailón', 'Cono'),
+('Colorante', 'Pomos'),
+('Colorante', 'Galones'),
+('Esencia de mantequilla', 'Pomos'),
+('Bicarbonato', 'Kg');
 
 

@@ -3,24 +3,25 @@ require_once('config.php');
 
 header('Content-Type: application/json');
 
-if (!isset($_GET['numero_operacion']) || !isset($_GET['producto'])) {
+if (!isset($_GET['numero_operacion']) || !isset($_GET['producto']) || !isset($_GET['almacen_id'])) {
     echo json_encode(['success' => false, 'message' => 'Parámetros faltantes']);
     exit();
 }
 
 $numero_operacion = (int)$_GET['numero_operacion'];
 $producto = (int)$_GET['producto'];
+$almacen_id = (int)$_GET['almacen_id'];
 
 try {
-    // Obtener el registro anterior al especificado
+    // Obtener el registro anterior al especificado para el almacén específico
     $sql = "SELECT saldo_fisico, saldo_usd 
-            FROM almacen_canal_tarjetas_estiba_usd 
-            WHERE producto = ? AND numero_operacion < ? 
+            FROM almacen_usd_tarjetas_estiba 
+            WHERE producto = ? AND almacen_id = ? AND numero_operacion < ? 
             ORDER BY numero_operacion DESC 
             LIMIT 1";
 
     $stmt = $conn->prepare($sql);
-    $stmt->bind_param("ii", $producto, $numero_operacion);
+    $stmt->bind_param("iii", $producto, $almacen_id, $numero_operacion);
     $stmt->execute();
     $result = $stmt->get_result();
 

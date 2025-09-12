@@ -2,14 +2,15 @@
 require_once('config.php');
 session_start();
 
-if (isset($_GET['numero_operacion']) && isset($_GET['producto'])) {
+if (isset($_GET['numero_operacion']) && isset($_GET['producto']) && isset($_GET['almacen_id'])) {
     $numero_operacion = (int)$_GET['numero_operacion'];
     $producto = (int)$_GET['producto'];
+    $almacen_id = (int)$_GET['almacen_id'];
 
-    $sql = "SELECT * FROM almacen_canal_tarjetas_estiba_usd 
-            WHERE numero_operacion = ? AND producto = ?";
+    $sql = "SELECT * FROM almacen_usd_tarjetas_estiba 
+            WHERE numero_operacion = ? AND producto = ? AND almacen_id = ?";
     $stmt = $conn->prepare($sql);
-    $stmt->bind_param("ii", $numero_operacion, $producto);
+    $stmt->bind_param("iii", $numero_operacion, $producto, $almacen_id);
     $stmt->execute();
     $result = $stmt->get_result();
 

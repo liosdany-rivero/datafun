@@ -35,11 +35,17 @@ foreach ($almacenesUSD as $codigo => $nombre) {
     $result = $stmt->get_result();
     $permiso = $result->fetch_assoc()['permiso'] ?? '';
     $stmt->close();
-    
+
     // Si el usuario tiene permiso de leer, escribir o tramitar, mostrar el almacén
     if (in_array($permiso, ['leer', 'escribir', 'tramitar'])) {
         $almacenesConPermiso[$codigo] = $nombre;
     }
+}
+// Obtener el almacén por defecto si hay solo uno con permiso
+$almacenDefault = null;
+if (count($almacenesConPermiso) === 1) {
+    $almacenDefault = array_key_first($almacenesConPermiso);
+    $_SESSION['almacen_actual'] = $almacenDefault;
 }
 
 ob_end_flush();
@@ -70,7 +76,7 @@ ob_end_flush();
             <p>No tiene permisos para acceder a ningún almacén USD.</p>
         <?php else: ?>
             <?php foreach ($almacenesConPermiso as $codigo => $nombre): ?>
-                <a href="../almacen/almacen_usd_movimientos.php?almacen=<?= $codigo ?>" class="dashboard-button">
+                <a href="../almacen/almacen_usd_inventario.php?almacen_id=<?= $codigo ?>" class="dashboard-button">
                     <span><?= htmlspecialchars($nombre) ?></span>
                     <p>Gestión de almacén USD</p>
                 </a>

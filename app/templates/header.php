@@ -39,7 +39,7 @@ $mostrarFlujoCajaPrincipal = false;
 $permisoPanaderia = '';
 $tienePermisosCajas = false;
 $tienePermisosCatalogos = false;
-$tienePermisosAlmacenes = false;
+$tienePermisosAlmacenesUSD = false; // Variable renombrada
 $permisosCentros = []; // Nuevo array para almacenar permisos por centro de costo
 
 // Lógica de caché (versión optimizada)
@@ -54,7 +54,7 @@ if (isset($_SESSION['user_id'])) {
         $permisoPanaderia = $_SESSION['permisos_cache']['permisoPanaderia'];
         $tienePermisosCajas = $_SESSION['permisos_cache']['tienePermisosCajas'];
         $tienePermisosCatalogos = $_SESSION['permisos_cache']['tienePermisosCatalogos'];
-        $tienePermisosAlmacenes = $_SESSION['permisos_cache']['tienePermisosAlmacenes'];
+        $tienePermisosAlmacenesUSD = $_SESSION['permisos_cache']['tienePermisosAlmacenesUSD']; // Variable renombrada
         $permisosCentros = $_SESSION['permisos_cache']['permisosCentros'];
     } else {
         // Regenerar caché
@@ -88,12 +88,23 @@ if (isset($_SESSION['user_id'])) {
         $tienePermisosCajas = ($result->fetch_assoc()['total'] > 0);
         $stmt->close();
 
-        // Establecer permisos de catalogos y almacenes
+        // NUEVA LÓGICA: Verificar permisos en almacenes USD
+        $stmt = $conn->prepare("SELECT COUNT(*) as total 
+                              FROM permisos p
+                              JOIN centros_costo cc ON p.centro_costo_codigo = cc.codigo
+                              WHERE p.user_id = ? 
+                              AND p.permiso IN ('leer', 'escribir', 'tramitar')
+                              AND cc.Almacen_USD = 1");
+        $stmt->bind_param("i", $user_id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $tienePermisosAlmacenesUSD = ($result->fetch_assoc()['total'] > 0);
+        $stmt->close();
+
+        // Establecer permisos de catalogos (mantener lógica existente)
         if (isset($permisosCentros[700])) {
             $tienePermisosCatalogos = true;
-            $tienePermisosAlmacenes = true;
         }
-
 
         // Actualizar caché
         $_SESSION['permisos_cache'] = [
@@ -102,7 +113,7 @@ if (isset($_SESSION['user_id'])) {
             'permisoPanaderia' => $permisoPanaderia,
             'tienePermisosCajas' => $tienePermisosCajas,
             'tienePermisosCatalogos' => $tienePermisosCatalogos,
-            'tienePermisosAlmacenes' => $tienePermisosAlmacenes,
+            'tienePermisosAlmacenesUSD' => $tienePermisosAlmacenesUSD, // Variable renombrada
             'permisosCentros' => $permisosCentros,
             'timestamp' => time()
         ];
@@ -174,7 +185,7 @@ if (isset($_SESSION['user_id'])) {
                             </ul>
                         </li>
                     <?php endif; ?>
-                    <?php if ($tienePermisosAlmacenes): ?>
+                    <?php if ($tienePermisosAlmacenesUSD): ?>
                         <li class="menu-item-has-children">
                             <a href="javascript:void(0)">Almacenes</a>
                             <ul class="sub-menu">
