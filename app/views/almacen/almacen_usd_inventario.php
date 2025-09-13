@@ -8,7 +8,7 @@ ob_start();
 
 // SECCIÓN 1: INCLUSIONES Y CONFIGURACIÓN
 include('../../templates/header.php');          // Cabecera común del sistema
-require_once('../../controllers/auth_admin_check.php'); // Verificación de permisos
+require_once('../../controllers/auth_user_check.php');
 require_once('../../controllers/config.php');   // Configuración de conexión a BD
 
 // Obtener el ID del almacén desde la URL o sesión
@@ -31,6 +31,7 @@ $result = $stmt->get_result();
 $permiso = $result->fetch_assoc()['permiso'] ?? '';
 $stmt->close();
 
+// Verificar permisos - si no tiene ninguno, redirigir
 if (!in_array($permiso, ['leer', 'escribir', 'tramitar'])) {
     $_SESSION['error_msg'] = "No tiene permisos para acceder a este almacén";
     header("Location: almacen_usd_dashboard.php");
@@ -54,6 +55,12 @@ if (empty($_SESSION['csrf_token'])) {
 
 // 2.1 Creación/Actualización de inventario
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['save_inventario'])) {
+    // Verificar permiso
+    if ($permiso !== 'escribir') {
+        $_SESSION['error_msg'] = "No tiene permisos para realizar esta acción";
+        header("Location: almacen_usd_inventario.php?almacen_id=$almacen_id");
+        exit();
+    }
     // Validación CSRF
     if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
         die("Token CSRF inválido");
@@ -141,6 +148,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['save_inventario'])) {
 
 // 2.2 Eliminación de inventario
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['delete_inventario'])) {
+    // Verificar permiso
+    if ($permiso !== 'escribir') {
+        $_SESSION['error_msg'] = "No tiene permisos para realizar esta acción";
+        header("Location: almacen_usd_inventario.php?almacen_id=$almacen_id");
+        exit();
+    }
+
     if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
         die("Token CSRF inválido");
     }
@@ -192,14 +206,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['delete_inventario'])) 
 
 // Obtener lista de productos para el select (excluyendo los que ya están en inventario)
 $productos = [];
-$sql_productos = "SELECT p.codigo, p.nombre, p.um 
-                  FROM productos p 
-                  LEFT JOIN almacen_usd_inventario i ON p.codigo = i.producto AND i.almacen_id = $almacen_id
-                  WHERE i.producto IS NULL 
-                  ORDER BY p.nombre";
-$result_productos = mysqli_query($conn, $sql_productos);
-while ($row = mysqli_fetch_assoc($result_productos)) {
-    $productos[$row['codigo']] = ['nombre' => $row['nombre'], 'um' => $row['um']];
+// Solo obtener productos si el usuario tiene permiso de escritura
+if ($permiso === 'escribir') {
+    $sql_productos = "SELECT p.codigo, p.nombre, p.um 
+                      FROM productos p 
+                      LEFT JOIN almacen_usd_inventario i ON p.codigo = i.producto AND i.almacen_id = $almacen_id
+                      WHERE i.producto IS NULL 
+                      ORDER BY p.nombre";
+    $result_productos = mysqli_query($conn, $sql_productos);
+    while ($row = mysqli_fetch_assoc($result_productos)) {
+        $productos[$row['codigo']] = ['nombre' => $row['nombre'], 'um' => $row['um']];
+    }
 }
 
 // Configuración de paginación
@@ -239,7 +256,9 @@ ob_end_flush();
                 <th>Saldo Físico</th>
                 <th>Valor USD</th>
                 <th>Fecha Operación</th>
-                <th>Acciones</th>
+                <?php if ($permiso !== 'leer'): ?>
+                    <th>Acciones</th>
+                <?php endif; ?>
             </tr>
         </thead>
         <tbody>
@@ -251,12 +270,18 @@ ob_end_flush();
                     <td data-label="Valor USD">$<?= number_format($row['valor_usd'], 2) ?></td>
                     <td data-label="Fecha Operación"><?= htmlspecialchars($row['fecha_operacion']) ?></td>
 
-                    <td data-label>
-                        <div class="table-action-buttons">
-                            <button onclick="showDeleteForm('<?= $row['producto'] ?>', '<?= htmlspecialchars($row['producto_nombre']) ?>')">Eliminar</button>
-                            <button onclick="location.href='almacen_usd_tarjetas_estiba.php?producto=<?= $row['producto'] ?>&almacen_id=<?= $almacen_id ?>'">Tarjetas</button>
-                        </div>
-                    </td>
+                    <?php if ($permiso !== 'leer'): ?>
+                        <td data-label>
+                            <div class="table-action-buttons">
+                                <?php if ($permiso === 'escribir'): ?>
+                                    <button onclick="showDeleteForm('<?= $row['producto'] ?>', '<?= htmlspecialchars($row['producto_nombre']) ?>')">Eliminar</button>
+                                <?php endif; ?>
+                                <?php if ($permiso === 'tramitar' || $permiso === 'escribir'): ?>
+                                    <button onclick="location.href='almacen_usd_tarjetas_estiba.php?producto=<?= $row['producto'] ?>&almacen_id=<?= $almacen_id ?>'">Tarjetas</button>
+                                <?php endif; ?>
+                            </div>
+                        </td>
+                    <?php endif; ?>
                 </tr>
             <?php endforeach; ?>
         </tbody>
@@ -306,97 +331,102 @@ ob_end_flush();
     <?php endif; ?>
 
     <!-- Formulario Crear -->
-    <div id="inventarioFormContainer" class="sub-form" style="display: none;">
-        <h3>Crear Inventario</h3>
-        <form method="POST" action="almacen_usd_inventario.php">
-            <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
-            <input type="hidden" name="almacen_id" value="<?= $almacen_id ?>">
+    <!-- Formulario Crear - Solo para usuarios con permiso 'escribir' -->
+    <?php if ($permiso === 'escribir'): ?>
+        <div id="inventarioFormContainer" class="sub-form" style="display: none;">
+            <h3>Crear Inventario</h3>
+            <form method="POST" action="almacen_usd_inventario.php">
+                <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
+                <input type="hidden" name="almacen_id" value="<?= $almacen_id ?>">
 
-            <label for="producto">Producto:</label>
-            <select id="producto" name="producto" required>
-                <option value="">Seleccione un producto</option>
-                <?php foreach ($productos as $codigo => $producto): ?>
-                    <option value="<?= $codigo ?>" data-um="<?= htmlspecialchars($producto['um']) ?>">
-                        <?= htmlspecialchars($producto['nombre']) ?> (<?= htmlspecialchars($producto['um']) ?>)
-                    </option>
-                <?php endforeach; ?>
-            </select>
+                <label for="producto">Producto:</label>
+                <select id="producto" name="producto" required>
+                    <option value="">Seleccione un producto</option>
+                    <?php foreach ($productos as $codigo => $producto): ?>
+                        <option value="<?= $codigo ?>"><?= htmlspecialchars($producto['nombre']) ?> (<?= htmlspecialchars($producto['um']) ?>)</option>
+                    <?php endforeach; ?>
+                </select>
 
-            <div style="display: flex; gap: 10px; margin-top: 20px;">
-                <button type="submit" name="save_inventario" class="btn-primary">Guardar</button>
-                <button type="button" onclick="hideForms()" class="btn-primary">Cancelar</button>
-            </div>
-        </form>
-    </div>
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button type="submit" name="save_inventario" class="btn-primary">Guardar</button>
+                    <button type="button" onclick="hideForms()" class="btn-primary">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    <?php endif; ?>
 
     <!-- Formulario Eliminar -->
-    <div id="deleteFormContainer" class="sub-form" style="display: none;">
-        <h3>¿Eliminar inventario del producto <span id="deleteProductoDisplay"></span>?</h3>
-        <p>Esta acción no se puede deshacer.</p>
-        <form method="POST" action="almacen_usd_inventario.php?almacen_id=<?= $almacen_id ?>">
-            <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
-            <input type="hidden" name="producto" id="delete_producto">
-            <input type="hidden" name="almacen_id" value="<?= $almacen_id ?>">
-            <div style="display: flex; gap: 10px; margin-top: 20px;">
-                <button type="submit" name="delete_inventario" class="btn-danger">Confirmar Eliminación</button>
-                <button type="button" onclick="hideForms()" class="btn-danger">Cancelar</button>
-            </div>
-        </form>
+    <!-- Formulario Eliminar - Solo para usuarios con permiso 'escribir' -->
+    <?php if ($permiso === 'escribir'): ?>
+        <div id="deleteFormContainer" class="sub-form" style="display: none;">
+            <h3>¿Eliminar inventario del producto <span id="deleteProductoDisplay"></span>?</h3>
+            <p>Esta acción no se puede deshacer.</p>
+            <form method="POST" action="almacen_usd_inventario.php?almacen_id=<?= $almacen_id ?>">
+                <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
+                <input type="hidden" name="producto" id="delete_producto">
+                <input type="hidden" name="almacen_id" value="<?= $almacen_id ?>">
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button type="submit" name="delete_inventario" class="btn-danger">Confirmar Eliminación</button>
+                    <button type="button" onclick="hideForms()" class="btn-danger">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    <?php endif; ?>
+
+    <BR>
+    <BR>
+    <BR>
+
+    <div id="barra-estado">
+        <ul class="secondary-nav-menu">
+            <li><button onclick="location.href='almacen_usd_dashboard.php'" class="nav-button">← Almacenes</button></li>
+            <?php if ($permiso === 'escribir'): ?>
+                <li><button onclick="showCreateForm()" class="nav-button">+ Nuevo Inventario</button></li>
+            <?php endif; ?>
+        </ul>
     </div>
-</div>
 
-<BR>
-<BR>
-<BR>
+    <!-- SECCIÓN 5: JAVASCRIPT PARA INTERACCIÓN -->
+    <script>
+        /**
+         * Muestra formulario de creación
+         * - Restablece campos
+         * - Muestra el contenedor
+         * - Hace scroll al final
+         */
+        function showCreateForm() {
+            hideForms();
+            document.getElementById('inventarioFormContainer').style.display = 'block';
+            scrollToBottom();
+        }
 
-<div id="barra-estado">
-    <ul class="secondary-nav-menu">
-        <li><button onclick="location.href='almacen_usd_dashboard.php'" class="nav-button">← Almacenes</button></li>
-        <li><button onclick="showCreateForm()" class="nav-button">+ Nuevo Inventario</button></li>
-    </ul>
-</div>
+        /**
+         * Muestra formulario de eliminación con confirmación
+         * @param {number} producto - ID del producto
+         * @param {string} producto_nombre - Nombre del producto a mostrar en confirmación
+         */
+        function showDeleteForm(producto, producto_nombre) {
+            hideForms();
+            document.getElementById('delete_producto').value = producto;
+            document.getElementById('deleteProductoDisplay').textContent = producto_nombre;
+            document.getElementById('deleteFormContainer').style.display = 'block';
+            scrollToBottom();
+        }
 
-<!-- SECCIÓN 5: JAVASCRIPT PARA INTERACCIÓN -->
-<script>
-    /**
-     * Muestra formulario de creación
-     * - Restablece campos
-     * - Muestra el contenedor
-     * - Hace scroll al final
-     */
-    function showCreateForm() {
-        hideForms();
-        document.getElementById('inventarioFormContainer').style.display = 'block';
-        scrollToBottom();
-    }
+        /**
+         * Oculta todos los formularios
+         */
+        function hideForms() {
+            document.getElementById('inventarioFormContainer').style.display = 'none';
+            document.getElementById('deleteFormContainer').style.display = 'none';
+        }
 
-    /**
-     * Muestra formulario de eliminación con confirmación
-     * @param {number} producto - ID del producto
-     * @param {string} producto_nombre - Nombre del producto a mostrar en confirmación
-     */
-    function showDeleteForm(producto, producto_nombre) {
-        hideForms();
-        document.getElementById('delete_producto').value = producto;
-        document.getElementById('deleteProductoDisplay').textContent = producto_nombre;
-        document.getElementById('deleteFormContainer').style.display = 'block';
-        scrollToBottom();
-    }
+        /**
+         * Hace scroll al final de la página
+         */
+        function scrollToBottom() {
+            window.scrollTo(0, document.body.scrollHeight);
+        }
+    </script>
 
-    /**
-     * Oculta todos los formularios
-     */
-    function hideForms() {
-        document.getElementById('inventarioFormContainer').style.display = 'none';
-        document.getElementById('deleteFormContainer').style.display = 'none';
-    }
-
-    /**
-     * Hace scroll al final de la página
-     */
-    function scrollToBottom() {
-        window.scrollTo(0, document.body.scrollHeight);
-    }
-</script>
-
-<?php include('../../templates/footer.php'); ?>
+    <?php include('../../templates/footer.php'); ?>

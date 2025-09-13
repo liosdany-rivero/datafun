@@ -8,7 +8,7 @@ ob_start();
 
 // SECCIÓN 1: INCLUSIONES Y CONFIGURACIÓN
 include('../../templates/header.php');          // Cabecera común del sistema
-require_once('../../controllers/auth_admin_check.php'); // Verificación de permisos
+require_once('../../controllers/auth_user_check.php');
 require_once('../../controllers/config.php');   // Configuración de conexión a BD
 
 // Obtener el ID del almacén desde la URL o sesión
@@ -381,8 +381,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['editar_registro'])) {
         $stmt_inv->bind_param(
             "iddsi",
             $producto,
-            $nuevo_saldo_fisico,
-            $nuevo_saldo_usd,
+            $saldo_fisico_actual,  // ← Usar la variable correcta
+            $saldo_usd_actual,     // ← Usar la variable correcta
             $fecha,
             $almacen_id
         );
