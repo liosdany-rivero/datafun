@@ -43,7 +43,7 @@ $stmt = $conn->prepare("SELECT COUNT(*) as total
                         JOIN centros_costo cc ON p.centro_costo_codigo = cc.codigo
                         WHERE p.user_id = ? 
                         AND p.permiso IN ('leer', 'escribir', 'tramitar')
-                        AND cc.Establecimiento = 1");
+                        AND cc.Punto_Venta = 1");
 $stmt->bind_param("i", $_SESSION['user_id']);
 $stmt->execute();
 $result = $stmt->get_result();

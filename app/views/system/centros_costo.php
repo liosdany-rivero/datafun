@@ -49,7 +49,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['save_centro_costo'])) 
     }
 
     // Asegurar valores para todos los campos booleanos
-    $Establecimiento = isset($_POST['Establecimiento']) ? 1 : 0;
+    $Punto_Venta = isset($_POST['Punto_Venta']) ? 1 : 0;
     $E_Caja_Princ = isset($_POST['E_Caja_Princ']) ? 1 : 0;
     $S_Caja_Princ = isset($_POST['S_Caja_Princ']) ? 1 : 0;
     $E_Caja_Panad = isset($_POST['E_Caja_Panad']) ? 1 : 0;
@@ -77,29 +77,30 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['save_centro_costo'])) 
             // MODE EDIT - Usamos UPDATE en lugar de REPLACE
             $action = "actualizado";
             $sql = "UPDATE centros_costo SET 
-        nombre = ?, 
-        Establecimiento = ?, 
-        E_Caja_Princ = ?, 
-        S_Caja_Princ = ?, 
-        E_Caja_Panad = ?, 
-        S_Caja_Panad = ?, 
-        E_Caja_Trinid = ?, 
-        S_Caja_Trinid = ?, 
-        E_Caja_Gallet = ?, 
-        S_Caja_Gallet = ?, 
-        E_Caja_Cochi = ?, 
-        S_Caja_Cochi = ?,
-        Modulo = ?,
-        E_Almacen_USD = ?,
-        S_Almacen_USD = ?,
-        Almacen_USD = ?
-        WHERE codigo = ?";
-
+                nombre = ?, 
+                Modulo = ?,
+                Punto_Venta = ?, 
+                Almacen_USD = ?,
+                E_Caja_Princ = ?, 
+                S_Caja_Princ = ?, 
+                E_Caja_Panad = ?, 
+                S_Caja_Panad = ?, 
+                E_Caja_Trinid = ?, 
+                S_Caja_Trinid = ?, 
+                E_Caja_Gallet = ?, 
+                S_Caja_Gallet = ?, 
+                E_Caja_Cochi = ?, 
+                S_Caja_Cochi = ?,
+                E_Almacen_USD = ?,
+                S_Almacen_USD = ?
+                WHERE codigo = ?";
             $stmt = $conn->prepare($sql);
             $stmt->bind_param(
                 "siiiiiiiiiiiiiiii",
                 $nombre,
-                $Establecimiento,
+                $Modulo,
+                $Punto_Venta,
+                $Almacen_USD,
                 $E_Caja_Princ,
                 $S_Caja_Princ,
                 $E_Caja_Panad,
@@ -110,10 +111,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['save_centro_costo'])) 
                 $S_Caja_Gallet,
                 $E_Caja_Cochi,
                 $S_Caja_Cochi,
-                $Modulo,
                 $E_Almacen_USD,
                 $S_Almacen_USD,
-                $Almacen_USD,
                 $codigo
             );
         } else {
@@ -131,17 +130,19 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['save_centro_costo'])) 
             $check_stmt->close();
 
             $sql = "INSERT INTO centros_costo 
-       (codigo, nombre, Establecimiento, E_Caja_Princ, S_Caja_Princ, E_Caja_Panad, S_Caja_Panad, 
-       E_Caja_Trinid, S_Caja_Trinid, E_Caja_Gallet, S_Caja_Gallet, E_Caja_Cochi, S_Caja_Cochi, Modulo,
-       E_Almacen_USD, S_Almacen_USD, Almacen_USD) 
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                (codigo, nombre, Modulo, Punto_Venta, Almacen_USD, E_Caja_Princ, S_Caja_Princ, E_Caja_Panad, S_Caja_Panad, 
+                E_Caja_Trinid, S_Caja_Trinid, E_Caja_Gallet, S_Caja_Gallet, E_Caja_Cochi, S_Caja_Cochi,
+                E_Almacen_USD, S_Almacen_USD) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
             $stmt = $conn->prepare($sql);
             $stmt->bind_param(
-                "isiiiiiiiiiiii",
+                "isiiiiiiiiiiiiiii",
                 $codigo,
                 $nombre,
-                $Establecimiento,
+                $Modulo,
+                $Punto_Venta,
+                $Almacen_USD,
                 $E_Caja_Princ,
                 $S_Caja_Princ,
                 $E_Caja_Panad,
@@ -152,7 +153,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['save_centro_costo'])) 
                 $S_Caja_Gallet,
                 $E_Caja_Cochi,
                 $S_Caja_Cochi,
-                $Modulo
+                $E_Almacen_USD,
+                $S_Almacen_USD
             );
         }
 
@@ -243,7 +245,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update_checkbox'])) {
 
     // Validar campo permitido - LISTA COMPLETA
     $campos_permitidos = [
-        'Establecimiento',
+        'Modulo',
+        'Punto_Venta',
+        'Almacen_USD',
         'E_Caja_Princ',
         'S_Caja_Princ',
         'E_Caja_Panad',
@@ -254,10 +258,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update_checkbox'])) {
         'S_Caja_Gallet',
         'E_Caja_Cochi',
         'S_Caja_Cochi',
-        'Modulo',
         'E_Almacen_USD',
-        'S_Almacen_USD',
-        'Almacen_USD'
+        'S_Almacen_USD'
     ];
 
     if (!in_array($campo, $campos_permitidos)) {
@@ -306,7 +308,9 @@ ob_end_flush();
             <tr>
                 <th>Código</th>
                 <th>Nombre</th>
-                <th>Estab.</th>
+                <th>Módulo</th>
+                <th>Punto Venta</th>
+                <th>Alm USD</th>
                 <th>E Caja Princ</th>
                 <th>S Caja Princ</th>
                 <th>E Caja Panad</th>
@@ -317,10 +321,8 @@ ob_end_flush();
                 <th>S Caja Gallet</th>
                 <th>E Caja Cochi</th>
                 <th>S Caja Cochi</th>
-                <th>Módulo</th>
                 <th>E Alm USD</th>
                 <th>S Alm USD</th>
-                <th>Alm USD</th>
                 <th>Acciones</th>
             </tr>
         </thead>
@@ -328,22 +330,48 @@ ob_end_flush();
             <?php foreach ($centros_costo as $row): ?>
                 <tr>
                     <td data-label="Código"><?= htmlspecialchars($row['codigo']) ?></td>
-                    <td data-label="Centro costo"><?= htmlspecialchars($row['nombre']) ?></td>
+                    <td data-label="Centro Costo"><?= htmlspecialchars($row['nombre']) ?></td>
 
                     <!-- Campos booleanos como emojis (✅/❌) SOLO LECTURA -->
                     <?php ?>
                     <!-- Campos booleanos como checkboxes dentro de formularios -->
-                    <td data-label="Establecimiento">
+
+                    <td data-label="Módulo">
                         <form method="POST" action="centros_costo.php" class="checkbox-form">
                             <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
                             <input type="hidden" name="update_checkbox" value="true">
                             <input type="hidden" name="codigo" value="<?= $row['codigo'] ?>">
-                            <input type="hidden" name="campo" value="Establecimiento">
+                            <input type="hidden" name="campo" value="Modulo">
                             <input type="checkbox" class="editable-checkbox"
                                 onchange="handleCheckboxChange(this)"
-                                <?= $row['Establecimiento'] ? 'checked' : '' ?>>
+                                <?= $row['Modulo'] ? 'checked' : '' ?>>
                         </form>
                     </td>
+
+                    <td data-label="Punto Venta">
+                        <form method="POST" action="centros_costo.php" class="checkbox-form">
+                            <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
+                            <input type="hidden" name="update_checkbox" value="true">
+                            <input type="hidden" name="codigo" value="<?= $row['codigo'] ?>">
+                            <input type="hidden" name="campo" value="Punto_Venta">
+                            <input type="checkbox" class="editable-checkbox"
+                                onchange="handleCheckboxChange(this)"
+                                <?= $row['Punto_Venta'] ? 'checked' : '' ?>>
+                        </form>
+                    </td>
+
+                    <td data-label="Alm USD">
+                        <form method="POST" action="centros_costo.php" class="checkbox-form">
+                            <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
+                            <input type="hidden" name="update_checkbox" value="true">
+                            <input type="hidden" name="codigo" value="<?= $row['codigo'] ?>">
+                            <input type="hidden" name="campo" value="Almacen_USD">
+                            <input type="checkbox" class="editable-checkbox"
+                                onchange="handleCheckboxChange(this)"
+                                <?= $row['Almacen_USD'] ? 'checked' : '' ?>>
+                        </form>
+                    </td>
+
                     <td data-label="E Caja Princ">
                         <form method="POST" action="centros_costo.php" class="checkbox-form">
                             <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
@@ -454,17 +482,7 @@ ob_end_flush();
                                 <?= $row['S_Caja_Cochi'] ? 'checked' : '' ?>>
                         </form>
                     </td>
-                    <td data-label="Módulo">
-                        <form method="POST" action="centros_costo.php" class="checkbox-form">
-                            <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
-                            <input type="hidden" name="update_checkbox" value="true">
-                            <input type="hidden" name="codigo" value="<?= $row['codigo'] ?>">
-                            <input type="hidden" name="campo" value="Modulo">
-                            <input type="checkbox" class="editable-checkbox"
-                                onchange="handleCheckboxChange(this)"
-                                <?= $row['Modulo'] ? 'checked' : '' ?>>
-                        </form>
-                    </td>
+
                     <td data-label="E Alm USD">
                         <form method="POST" action="centros_costo.php" class="checkbox-form">
                             <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
@@ -487,40 +505,30 @@ ob_end_flush();
                                 <?= $row['S_Almacen_USD'] ? 'checked' : '' ?>>
                         </form>
                     </td>
-                    <td data-label="Alm USD">
-                        <form method="POST" action="centros_costo.php" class="checkbox-form">
-                            <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
-                            <input type="hidden" name="update_checkbox" value="true">
-                            <input type="hidden" name="codigo" value="<?= $row['codigo'] ?>">
-                            <input type="hidden" name="campo" value="Almacen_USD">
-                            <input type="checkbox" class="editable-checkbox"
-                                onchange="handleCheckboxChange(this)"
-                                <?= $row['Almacen_USD'] ? 'checked' : '' ?>>
-                        </form>
-                    </td>
+
                     <?php ?>
 
                     <td data-label>
                         <div class="table-action-buttons">
                             <button onclick="showEditForm(
-    '<?= $row['codigo'] ?>', 
-    '<?= htmlspecialchars($row['nombre']) ?>',
-    '<?= $row['Establecimiento'] ?>',
-    '<?= $row['E_Caja_Princ'] ?>',
-    '<?= $row['S_Caja_Princ'] ?>',
-    '<?= $row['E_Caja_Panad'] ?>',
-    '<?= $row['S_Caja_Panad'] ?>',
-    '<?= $row['E_Caja_Trinid'] ?>',
-    '<?= $row['S_Caja_Trinid'] ?>',
-    '<?= $row['E_Caja_Gallet'] ?>',
-    '<?= $row['S_Caja_Gallet'] ?>',
-    '<?= $row['E_Caja_Cochi'] ?>',
-    '<?= $row['S_Caja_Cochi'] ?>',
-    '<?= $row['Modulo'] ?>',
-    '<?= $row['E_Almacen_USD'] ?>',
-    '<?= $row['S_Almacen_USD'] ?>',
-    '<?= $row['Almacen_USD'] ?>'
-)">Editar</button>
+                                '<?= $row['codigo'] ?>', 
+                                '<?= htmlspecialchars($row['nombre']) ?>',
+                                '<?= $row['Modulo'] ?>',
+                                '<?= $row['Punto_Venta'] ?>',
+                                '<?= $row['Almacen_USD'] ?>',
+                                '<?= $row['E_Caja_Princ'] ?>',
+                                '<?= $row['S_Caja_Princ'] ?>',
+                                '<?= $row['E_Caja_Panad'] ?>',
+                                '<?= $row['S_Caja_Panad'] ?>',
+                                '<?= $row['E_Caja_Trinid'] ?>',
+                                '<?= $row['S_Caja_Trinid'] ?>',
+                                '<?= $row['E_Caja_Gallet'] ?>',
+                                '<?= $row['S_Caja_Gallet'] ?>',
+                                '<?= $row['E_Caja_Cochi'] ?>',
+                                '<?= $row['S_Caja_Cochi'] ?>',
+                                '<?= $row['E_Almacen_USD'] ?>',
+                                '<?= $row['S_Almacen_USD'] ?>'
+                                )">Editar</button>
                             <button onclick="showDeleteForm('<?= $row['codigo'] ?>', '<?= htmlspecialchars($row['nombre']) ?>')">Eliminar</button>
                         </div>
                     </td>
@@ -587,9 +595,22 @@ ob_end_flush();
             <input type="text" id="nombre" name="nombre" maxlength="25" required />
 
             <label class="checkbox-container">
-                <input type="checkbox" id="Establecimiento" name="Establecimiento" value="1" />
-                Es Establecimiento
+                <input type="checkbox" id="Modulo" name="Modulo" value="1" />
+                Módulo
             </label>
+
+
+            <label class="checkbox-container">
+                <input type="checkbox" id="Punto_Venta" name="Punto_Venta" value="1" />
+                Es Punto Venta
+            </label>
+
+
+            <label class="checkbox-container">
+                <input type="checkbox" id="Almacen_USD" name="Almacen_USD" value="1" />
+                Almacén USD
+            </label>
+
 
             <label class="checkbox-container">
                 <input type="checkbox" id="E_Caja_Princ" name="E_Caja_Princ" value="1" />
@@ -641,10 +662,7 @@ ob_end_flush();
                 Salida Caja Cochiquera
             </label>
 
-            <label class="checkbox-container">
-                <input type="checkbox" id="Modulo" name="Modulo" value="1" />
-                Módulo
-            </label>
+
 
             <label class="checkbox-container">
                 <input type="checkbox" id="E_Almacen_USD" name="E_Almacen_USD" value="1" />
@@ -656,10 +674,6 @@ ob_end_flush();
                 Salida Almacén USD
             </label>
 
-            <label class="checkbox-container">
-                <input type="checkbox" id="Almacen_USD" name="Almacen_USD" value="1" />
-                Almacén USD
-            </label>
 
             <div style="display: flex; gap: 10px; margin-top: 20px;">
                 <button type="submit" name="save_centro_costo" class="btn-primary">Guardar</button>
@@ -715,7 +729,7 @@ ob_end_flush();
      * Muestra formulario de edición con datos existentes
      * @param {number} codigo - ID del centro de costo
      * @param {string} nombre - Nombre del centro
-     * @param {boolean} Establecimiento - Estado checkbox
+     * @param {boolean} Punto_Venta - Estado checkbox
      * @param {boolean} E_Caja_Princ - Estado checkbox
      * @param {boolean} S_Caja_Princ - Estado checkbox
      * @param {boolean} E_Caja_Panad - Estado checkbox
@@ -728,16 +742,18 @@ ob_end_flush();
      * @param {boolean} S_Caja_Cochi - Estado checkbox
      * @param {boolean} Modulo - Estado checkbox
      */
-    function showEditForm(codigo, nombre, Establecimiento, E_Caja_Princ, S_Caja_Princ, E_Caja_Panad, S_Caja_Panad,
-        E_Caja_Trinid, S_Caja_Trinid, E_Caja_Gallet, S_Caja_Gallet, E_Caja_Cochi, S_Caja_Cochi, Modulo,
-        E_Almacen_USD, S_Almacen_USD, Almacen_USD) {
+    function showEditForm(codigo, nombre, Modulo, Punto_Venta, Almacen_USD, E_Caja_Princ, S_Caja_Princ, E_Caja_Panad, S_Caja_Panad,
+        E_Caja_Trinid, S_Caja_Trinid, E_Caja_Gallet, S_Caja_Gallet, E_Caja_Cochi, S_Caja_Cochi,
+        E_Almacen_USD, S_Almacen_USD) {
         hideForms();
         document.getElementById('formTitle').textContent = 'Editar Centro de Costo';
         document.getElementById('edit_mode').value = 'true';
         document.getElementById('original_codigo').value = codigo;
         document.getElementById('codigo').value = codigo;
         document.getElementById('nombre').value = nombre;
-        document.getElementById('Establecimiento').checked = Establecimiento == '1';
+        document.getElementById('Modulo').checked = Modulo == '1';
+        document.getElementById('Punto_Venta').checked = Punto_Venta == '1';
+        document.getElementById('Almacen_USD').checked = Almacen_USD == '1';
         document.getElementById('E_Caja_Princ').checked = E_Caja_Princ == '1';
         document.getElementById('S_Caja_Princ').checked = S_Caja_Princ == '1';
         document.getElementById('E_Caja_Panad').checked = E_Caja_Panad == '1';
@@ -748,10 +764,8 @@ ob_end_flush();
         document.getElementById('S_Caja_Gallet').checked = S_Caja_Gallet == '1';
         document.getElementById('E_Caja_Cochi').checked = E_Caja_Cochi == '1';
         document.getElementById('S_Caja_Cochi').checked = S_Caja_Cochi == '1';
-        document.getElementById('Modulo').checked = Modulo == '1';
         document.getElementById('E_Almacen_USD').checked = E_Almacen_USD == '1';
         document.getElementById('S_Almacen_USD').checked = S_Almacen_USD == '1';
-        document.getElementById('Almacen_USD').checked = Almacen_USD == '1';
         document.getElementById('centroCostoFormContainer').style.display = 'block';
         scrollToBottom();
     }

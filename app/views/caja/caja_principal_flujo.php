@@ -29,8 +29,12 @@ if ($_SESSION['role'] === 'Administrador') {
 $centros_permitidos = [];
 $permisos_tramitar = []; // Centros donde el usuario puede tramitar
 
-$sql_permisos = "SELECT centro_costo_codigo, permiso FROM permisos 
-                WHERE user_id = ? AND permiso IN ('leer', 'escribir', 'tramitar')";
+$sql_permisos = "SELECT p.centro_costo_codigo, p.permiso, cc.nombre 
+                 FROM permisos p
+                 INNER JOIN centros_costo cc ON p.centro_costo_codigo = cc.codigo
+                 WHERE p.user_id = ? 
+                 AND p.permiso IN ('leer', 'escribir', 'tramitar')
+                 AND cc.Punto_Venta = 1";
 $stmt_permisos = $conn->prepare($sql_permisos);
 $stmt_permisos->bind_param("i", $_SESSION['user_id']);
 $stmt_permisos->execute();
@@ -218,7 +222,7 @@ ob_end_flush();
     <form id="filtrosForm" method="GET" action="caja_principal_flujo.php" class="filtros-form" style="display: <?= (isset($_GET['centro_costo']) || isset($_GET['tramitado']) || isset($_GET['tipo_operacion']) || isset($_GET['fecha_inicio']) || isset($_GET['fecha_fin'])) ? 'none' : 'block' ?>;">
         <div class="filtros-row">
             <div class="filtro-group">
-                <label for="centro_costo">Centro de Costo:</label>
+                <label for="centro_costo">Punto de venta:</label>
                 <select name="centro_costo" id="centro_costo" class="form-control">
                     <option value="todos">Todos</option>
                     <?php foreach ($centros_costo_info as $codigo => $nombre): ?>
@@ -295,7 +299,7 @@ ob_end_flush();
                         <th>N° Operación</th>
                         <th>Fecha Operación</th>
                         <th>Tipo Entrada</th>
-                        <th>Centro Costo</th>
+                        <th>Punto Venta</th>
                         <th>Monto Real</th>
                         <th>Fecha Documento</th>
                         <th>Cantidad Entregada</th>
@@ -312,7 +316,7 @@ ob_end_flush();
                             <td data-label="N° Operación"><?= htmlspecialchars($row['numero_operacion']) ?></td>
                             <td data-label="Fecha Oper."><?= htmlspecialchars($row['fecha_operacion']) ?></td>
                             <td data-label="Tipo Entrada"><?= htmlspecialchars($row['tipo_entrada']) ?></td>
-                            <td data-label="Centro Costo"><?= htmlspecialchars($row['nombre_centro_costo']) ?></td>
+                            <td data-label="Punto Venta"><?= htmlspecialchars($row['nombre_centro_costo']) ?></td>
                             <td data-label="Monto Real"><?= number_format($row['entrada'], 2) ?></td>
                             <td data-label="Fecha Docum."><?= htmlspecialchars($row['fecha_documento'] ?? 'N/A') ?></td>
                             <td data-label="Cant. Ent."><?= number_format($row['cantidad'] ?? 0, 2) ?></td>
@@ -351,7 +355,7 @@ ob_end_flush();
                         <th>N° Operación</th>
                         <th>Fecha Operación</th>
                         <th>Tipo Salida</th>
-                        <th>Centro Costo</th>
+                        <th>Punto Venta</th>
                         <th>Monto Real</th>
                         <th>Observaciones</th>
                         <th>Tramitado</th>
@@ -366,7 +370,7 @@ ob_end_flush();
                             <td data-label="N° Operación"><?= htmlspecialchars($row['numero_operacion']) ?></td>
                             <td data-label="Fecha Oper."><?= htmlspecialchars($row['fecha_operacion']) ?></td>
                             <td data-label="Tipo Salida"><?= htmlspecialchars($row['tipo_salida'] ?? 'N/A') ?></td>
-                            <td data-label="Centro Costo"><?= htmlspecialchars($row['nombre_centro_costo']) ?></td>
+                            <td data-label="Punto Venta"><?= htmlspecialchars($row['nombre_centro_costo']) ?></td>
                             <td data-label="Monto Real"><?= number_format($row['salida'], 2) ?></td>
                             <td data-label="Observaciones"><?= htmlspecialchars($row['observaciones'] ?? '') ?></td>
                             <!-- En la sección de salidas -->

@@ -125,7 +125,7 @@ $filtro_establecimiento = isset($_GET['f_establecimiento']) ? intval($_GET['f_es
 // =============================================
 
 // Construir condiciones WHERE según los filtros
-$where_conditions = ["(e.Establecimiento = 1 OR e.modulo = 1)"]; // Condición base
+$where_conditions = ["(e.Punto_Venta = 1 OR e.modulo = 1 OR e.Almacen_USD = 1)"]; // Condición base
 $query_params = [];
 $types = '';
 
@@ -197,7 +197,7 @@ $stmt_data->close();
 
 // Obtener datos para formularios (resetear punteros)
 $usuarios = mysqli_query($conn, "SELECT id, username FROM users ORDER BY username");
-$establecimientos = mysqli_query($conn, "SELECT codigo, nombre FROM centros_costo WHERE Establecimiento = 1 OR modulo = 1 ORDER BY nombre");
+$establecimientos = mysqli_query($conn, "SELECT codigo, nombre FROM centros_costo WHERE Punto_Venta = 1 OR modulo = 1 or Almacen_USD = 1 ORDER BY nombre");
 
 ob_end_flush();
 ?>
@@ -242,9 +242,9 @@ ob_end_flush();
             </div>
 
             <div class="filter-group">
-                <label for="f_establecimiento">Filtrar por Establecimiento:</label>
+                <label for="f_establecimiento">Filtrar por centro de costo:</label>
                 <select name="f_establecimiento" id="f_establecimiento" onchange="applyFilters()">
-                    <option value="">-- Todos los establecimientos --</option>
+                    <option value="">-- Todos los centros de costo --</option>
                     <?php mysqli_data_seek($establecimientos, 0); ?>
                     <?php while ($e = mysqli_fetch_assoc($establecimientos)): ?>
                         <option value="<?= $e['codigo'] ?>" <?= ($filtro_establecimiento == $e['codigo']) ? 'selected' : '' ?>>
@@ -267,7 +267,7 @@ ob_end_flush();
         <thead>
             <tr>
                 <th>Usuario</th>
-                <th>Establecimiento</th>
+                <th>Centro Costo</th>
                 <th>Permiso</th>
                 <th>Acciones</th>
             </tr>
@@ -276,7 +276,7 @@ ob_end_flush();
             <?php foreach ($permisos as $row): ?>
                 <tr>
                     <td data-label="Usuario"><?= htmlspecialchars($row['usuario']) ?></td>
-                    <td data-label="Establecimiento"><?= htmlspecialchars($row['establecimiento']) ?></td>
+                    <td data-label="Centro Costo"><?= htmlspecialchars($row['establecimiento']) ?></td>
                     <td data-label="Permiso"><?= htmlspecialchars($row['permiso']) ?></td>
                     <td data-label="Acciones">
                         <div class="table-action-buttons">

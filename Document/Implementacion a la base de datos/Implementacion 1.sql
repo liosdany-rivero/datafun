@@ -133,3 +133,9 @@ INSERT INTO productos (nombre, um) VALUES
 ('Bicarbonato', 'Kg');
 
 
+ALTER TABLE centros_costo 
+CHANGE COLUMN Establecimiento Punto_Venta TINYINT(1) NOT NULL DEFAULT 0;
+
+ALTER TABLE centros_costo 
+MODIFY COLUMN Modulo tinyint(1) NULL DEFAULT NULL AFTER nombre,
+MODIFY COLUMN Almacen_USD tinyint(1) NULL DEFAULT 0 COMMENT 'Almacén USD (1: Sí, 0: No)' AFTER Punto_Venta;

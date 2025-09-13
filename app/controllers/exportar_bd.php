@@ -5,7 +5,7 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 // Incluye el archivo de verificación de autenticación del usuario
-require_once('auth_user_check.php');
+require_once('auth_admin_check.php');
 
 // Verificación de permisos - Solo administradores pueden acceder
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'Administrador') {
