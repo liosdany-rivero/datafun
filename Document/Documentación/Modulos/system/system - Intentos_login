@@ -1,10 +1,11 @@
 # 🖥️ System (Sistema)
 
-## 💰 Centros de costo
+## 🚫 intentos_login
 
 ### 📋 Descripción
 
-Se utiliza para gestionar la creación, edición y eliminacion de los centros de costo del sistema.
+1. Se utiliza como medida de seguridad para evitar ataques de fuerza bruta ddos contra el sitio.
+2. Permite ver una tabla con los intentos de acceder al sitio infructuosos.
 
 ---
 
@@ -16,7 +17,9 @@ Se utiliza para gestionar la creación, edición y eliminacion de los centros de
 ### 👁️ Páginas Visibles
 
 ```php
-- 🐘 centros_costo.php # Interfaz principal de gestión de centros de costo
+
+- 🐘 intentos_login.php # Interfaz principal de los Ips
+
 ```
 
 ### 🎮 Controladores
@@ -36,5 +39,5 @@ Se utiliza para gestionar la creación, edición y eliminacion de los centros de
 ### 🗃️ Tablas de Base de Datos
 
 ```php
-- 📊 centros_costo  # Tabla principal de los centros de costo
+- 📊 intentos_login  # Tabla que muestras los intentos fallidos
 ```

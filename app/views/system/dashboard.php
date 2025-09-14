@@ -24,7 +24,7 @@ include('../../templates/header.php');
     <p>Como administrador puedes registrar nuevos usuarios usando el menú superior.</p>
   <?php else: ?>
     <!-- Mensaje para usuarios que no son administradores -->
-    <p>Tu sesión está activa. Puedes cerrar sesión desde el menú.</p>
+    <p>Tu sesión está activa.</p>
   <?php endif; ?>
 </div>
 

@@ -20,9 +20,9 @@ Función utilizada para descargar una copia de seguridad compactada de la base d
 ### 🎮 Controladores
 
 ```php
-- exportar_bd.php       # Genera y descarga el backup
-- auth_admin_check.php   # Verifica permisos de administrador
-- config.php            # Configuración de conexión a BD
+- ⚙️ exportar_bd.php       # Genera y descarga el backup
+- ⚙️ auth_admin_check.php   # Verifica permisos de administrador
+- ⚙️ config.php            # Configuración de conexión a BD
 ```
 
 ### 🎨 Templates
