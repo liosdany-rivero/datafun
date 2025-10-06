@@ -1,1 +1,1 @@
-t
+## Funcionamiento interno de una computadora: las diferentes capas involucradas
