@@ -6,4 +6,6 @@
     * RAM
     * Controlafores de dispositivos 
         * IDE
-        * 
+        * SCSI
+        * SATA
+        * USB
