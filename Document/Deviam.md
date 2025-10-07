@@ -43,3 +43,4 @@ Los núcleos tipo Unix (incluido Linux), al igual que la mayoría de los sistema
 
 5. Gestión de derechos
 Los sistemas tipo Unix también son multiusuario. Ofrecen un sistema de gestión de derechos que admite usuarios y grupos separados; además, permite el control de acciones según los permisos. El núcleo gestiona los datos de cada proceso, lo que le permite controlar los permisos.
+
