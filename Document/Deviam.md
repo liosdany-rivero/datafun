@@ -33,4 +33,11 @@ Aunque todo lo que ocurre fuera del núcleo puede agruparse bajo el "espacio de 
 
 ## Tareas manajadas por el núcleo 
 
+1. Control de hardware.
+2. Sistemas de archivos.
+3. Funciones compartidas.
+4. Gestión de procesos.
+
+Un proceso es una instancia en ejecución de un programa. Requiere memoria para almacenar tanto el programa como sus datos operativos. El núcleo se encarga de crearlos y registrarlos. Cuando un programa se ejecuta, el núcleo primero reserva memoria, luego carga el código ejecutable desde el sistema de archivos y, finalmente, inicia la ejecución del código. Guarda información sobre este proceso, la más visible de las cuales es un número de identificación conocido como PID ( identificador de proceso ).
+Los núcleos tipo Unix (incluido Linux), al igual que la mayoría de los sistemas operativos modernos, son capaces de realizar múltiples tareas. En otras palabras, permiten ejecutar varios procesos simultáneamente. En realidad, solo hay un proceso en ejecución, pero el núcleo divide el tiempo en pequeños intervalos y ejecuta cada proceso uno por uno. Dado que estos intervalos son muy cortos (del orden de milisegundos), crean la ilusión de que los procesos se ejecutan en paralelo, aunque en realidad solo están activos durante ciertos intervalos e inactivos el resto del tiempo. La función del núcleo es ajustar sus mecanismos de programación para mantener esta ilusión, a la vez que maximiza el rendimiento global del sistema. Si los intervalos son demasiado largos, la aplicación puede no mostrar la capacidad de respuesta deseada. Si son demasiado cortos, el sistema pierde tiempo cambiando de tarea con demasiada frecuencia. Estas decisiones se pueden ajustar con las prioridades de los procesos. Los procesos de alta prioridad se ejecutarán durante más tiempo y con intervalos más frecuentes que los de baja prioridad.
 
