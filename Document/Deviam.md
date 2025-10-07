@@ -81,3 +81,5 @@ la biblioteca C estándar ( glibc ), que contiene funciones básicas como las qu
 kits de herramientas gráficas, como Gtk+ y Qt, que permiten a muchos programas reutilizar los objetos gráficos que proporcionan;
 la biblioteca libpng , que permite cargar, interpretar y guardar imágenes en formato PNG.
 Gracias a estas bibliotecas, las aplicaciones pueden reutilizar código existente. El desarrollo de aplicaciones se simplifica, ya que muchas aplicaciones pueden reutilizar las mismas funciones. Con bibliotecas a menudo desarrolladas por diferentes personas, el desarrollo global del sistema se acerca más a la filosofía histórica de Unix.
+
+Además, estas bibliotecas suelen denominarse "bibliotecas compartidas", ya que el núcleo solo puede cargarlas en memoria una vez, incluso si varios procesos las usan simultáneamente. Esto permite ahorrar memoria, a diferencia de la situación hipotética opuesta, donde el código de una biblioteca se cargaría tantas veces como procesos la usen.
