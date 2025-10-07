@@ -49,3 +49,4 @@ Los sistemas tipo Unix también son multiusuario. Ofrecen un sistema de gestión
 
 El «espacio de usuario» se refiere al entorno de ejecución de los procesos normales (a diferencia de los del núcleo). Esto no significa necesariamente que estos procesos sean iniciados por los usuarios, ya que un sistema estándar suele tener varios procesos «daemon» (o en segundo plano) ejecutándose incluso antes de que el usuario abra una sesión. Los procesos daemon también se consideran procesos del espacio de usuario.
 
+
