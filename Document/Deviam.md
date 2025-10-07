@@ -26,3 +26,9 @@ La BIOS/UEFI también se encarga de detectar e inicializar varios dispositivos. 
 3. El núcleo
 
 Tanto la BIOS/UEFI como el gestor de arranque solo se ejecutan durante unos segundos cada uno; ahora llegamos al primer componente de software que se ejecuta durante más tiempo: el kernel del sistema operativo. Este kernel asume el papel de director de orquesta y garantiza la coordinación entre el hardware y el software. Esta función implica varias tareas, entre ellas: controlar el hardware, gestionar procesos, usuarios y permisos, el sistema de archivos, etc. El kernel proporciona una base común para todos los demás programas del sistema.
+
+4. El espacio del usuario
+
+Aunque todo lo que ocurre fuera del núcleo puede agruparse bajo el "espacio de usuario", aún podemos separarlo en capas de software. Sin embargo, sus interacciones son más complejas que antes, y las clasificaciones pueden no ser tan sencillas. Una aplicación suele usar bibliotecas, que a su vez involucran al núcleo, pero las comunicaciones también pueden involucrar a otros programas, o incluso a muchas bibliotecas que se llaman entre sí.
+Anterior
+B.2. Organización de la jerarquía del sistema de archivosArriba
