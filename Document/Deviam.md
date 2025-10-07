@@ -9,3 +9,4 @@
         * SCSI
         * SATA
         * USB
+        * IEEE 1394 (firewire)
