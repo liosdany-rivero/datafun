@@ -30,5 +30,3 @@ Tanto la BIOS/UEFI como el gestor de arranque solo se ejecutan durante unos segu
 4. El espacio del usuario
 
 Aunque todo lo que ocurre fuera del núcleo puede agruparse bajo el "espacio de usuario", aún podemos separarlo en capas de software. Sin embargo, sus interacciones son más complejas que antes, y las clasificaciones pueden no ser tan sencillas. Una aplicación suele usar bibliotecas, que a su vez involucran al núcleo, pero las comunicaciones también pueden involucrar a otros programas, o incluso a muchas bibliotecas que se llaman entre sí.
-Anterior
-B.2. Organización de la jerarquía del sistema de archivosArriba
