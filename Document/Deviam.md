@@ -45,3 +45,7 @@ Los núcleos tipo Unix (incluido Linux), al igual que la mayoría de los sistema
 
 Los sistemas tipo Unix también son multiusuario. Ofrecen un sistema de gestión de derechos que admite usuarios y grupos separados; además, permite el control de acciones según los permisos. El núcleo gestiona los datos de cada proceso, lo que le permite controlar los permisos.
 
+## El espacio del usuario
+
+El «espacio de usuario» se refiere al entorno de ejecución de los procesos normales (a diferencia de los del núcleo). Esto no significa necesariamente que estos procesos sean iniciados por los usuarios, ya que un sistema estándar suele tener varios procesos «daemon» (o en segundo plano) ejecutándose incluso antes de que el usuario abra una sesión. Los procesos daemon también se consideran procesos del espacio de usuario.
+
