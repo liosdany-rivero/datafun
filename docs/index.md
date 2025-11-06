@@ -4,7 +4,7 @@ title: Documentación técnica.
 nav_order: 1
 ---
 
-# DataFun - Sistema de Gestión
+# Estructura
 
 [Ver guía de instalación](instalacion.html) >
 [Modulos](modulos.html) >
