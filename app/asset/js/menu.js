@@ -18,11 +18,11 @@
  * 2. Las páginas pueden extender funcionalidad añadiendo sus propios scripts después
  */
 
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     // =============================================
     // SECCIÓN 1: CONTROL DEL MENÚ PRINCIPAL (RESPONSIVE)
     // =============================================
-    
+
     const menuToggle = document.getElementById('menuToggle');
     const mainNav = document.getElementById('mainNavigation');
     const submenuParents = document.querySelectorAll('.menu-item-has-children');
@@ -53,7 +53,7 @@ document.addEventListener('DOMContentLoaded', function() {
         };
 
         // Evento para el botón hamburguesa
-        menuToggle.addEventListener('click', function(e) {
+        menuToggle.addEventListener('click', function (e) {
             e.stopPropagation();
             toggleMobileMenu();
         });
@@ -65,12 +65,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
             if (trigger && submenu) {
                 // Comportamiento en móviles
-                trigger.addEventListener('click', function(e) {
+                trigger.addEventListener('click', function (e) {
                     if (window.innerWidth <= 768) {
                         e.preventDefault();
                         const isOpen = parent.classList.contains('submenu-open');
                         closeAllSubmenus(isOpen ? null : submenu);
-                        
+
                         if (!isOpen) {
                             submenu.style.maxHeight = submenu.scrollHeight + 'px';
                             parent.classList.add('submenu-open');
@@ -96,7 +96,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
         // Cerrar menús al hacer clic fuera
-        document.addEventListener('click', function(e) {
+        document.addEventListener('click', function (e) {
             if (!e.target.closest('.main-navigation') && !e.target.closest('.menu-toggle')) {
                 closeAllSubmenus();
                 if (window.innerWidth <= 768) {
@@ -107,7 +107,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
         // Reconfigurar al cambiar tamaño de ventana
-        window.addEventListener('resize', function() {
+        window.addEventListener('resize', function () {
             if (window.innerWidth > 768) {
                 closeAllSubmenus();
                 menuToggle.setAttribute('aria-expanded', 'false');
@@ -122,7 +122,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // =============================================
     // SECCIÓN 2: SISTEMA DE NOTIFICACIONES FLOTANTES
     // =============================================
-    
+
     /**
      * Inicializa y gestiona las notificaciones emergentes
      * - Muestra automáticamente las notificaciones existentes al cargar
@@ -155,19 +155,19 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
     };
-    
+
     // Inicializar notificaciones al cargar la página
     initNotifications();
 
     // =============================================
     // SECCIÓN 3: FUNCIONES UTILITARIAS GLOBALES
     // =============================================
-    
+
     /**
      * Hace scroll suave al final de la página
      * @param {boolean} smooth - Si true, hace scroll animado
      */
-    window.scrollToBottom = function(smooth = true) {
+    window.scrollToBottom = function (smooth = true) {
         window.scrollTo({
             top: document.body.scrollHeight,
             behavior: smooth ? 'smooth' : 'auto'
@@ -178,7 +178,7 @@ document.addEventListener('DOMContentLoaded', function() {
      * Oculta todos los formularios modales de la página
      * (Identificados por la clase 'sub-form')
      */
-    window.hideForms = function() {
+    window.hideForms = function () {
         document.querySelectorAll('.sub-form').forEach(form => {
             form.style.display = 'none';
         });
@@ -188,7 +188,7 @@ document.addEventListener('DOMContentLoaded', function() {
      * Muestra un formulario modal específico
      * @param {string} formId - ID del formulario a mostrar
      */
-    window.showForm = function(formId) {
+    window.showForm = function (formId) {
         hideForms();
         const form = document.getElementById(formId);
         if (form) {
@@ -201,7 +201,7 @@ document.addEventListener('DOMContentLoaded', function() {
      * Reinicia los campos de un formulario
      * @param {string} formId - ID del formulario a resetear
      */
-    window.resetForm = function(formId) {
+    window.resetForm = function (formId) {
         const form = document.getElementById(formId);
         if (form) form.reset();
     };
@@ -209,7 +209,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // =============================================
     // SECCIÓN 4: CONFIGURACIÓN INICIAL
     // =============================================
-    
+
     // Configuración inicial para menús
     if (window.innerWidth <= 768) {
         document.querySelectorAll('.sub-menu').forEach(submenu => {
