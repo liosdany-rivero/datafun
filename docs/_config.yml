@@ -1,0 +1,16 @@
+title: "DataFun - Sistema de Gestión"
+description: "Sistema web de gestión para almacenes, cajas y tasas"
+baseurl: "/datafun"
+url: "https://tu-usuario.github.io"
+theme: jekyll-theme-cayman
+plugins:
+  - jekyll-sitemap
+  - jekyll-seo-tag
+
+nav_order:
+  - index.md
+  - instalacion.md
+  - estructura.md
+  - modulos.md
+  - api.md
+  - desarrollo.md
