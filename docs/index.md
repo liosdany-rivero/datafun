@@ -1,7 +1,8 @@
 ---
 layout: default
-title: Documentación técnica.
+title: Inicio
 nav_order: 1
+has_children: false
 ---
 
 | Inicio                                  |
