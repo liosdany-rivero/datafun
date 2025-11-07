@@ -6,25 +6,14 @@ parent: Sistema de Accesos
 has_children: false
 ---
 
-| Inicio                                  |
-| --------------------------------------- |
-| [Inicio]({{ site.baseurl }}/index.html) |
+# 👥 Roles del Sistema
 
-| Sistema de accesos                                                           |
-| ---------------------------------------------------------------------------- |
-| [Roles]({{ site.baseurl }}/sistema-accesos/accesos-roles.html)               |
-| [Niveles de acceso]({{ site.baseurl }}/sistema-accesos/accesos-niveles.html) |
-
-# 🔐 Sistema de Accesos
-
-## 👥 Roles del Sistema
-
-### 🛡️ Administrador
+## 🛡️ Administrador
 
 - Se centra en actividades de la configuracón del sistema.
 - Realiza actividades de supervición y verificacion de operaciones.
 
-### 👤 Usuario
+## 👤 Usuario
 
 - Se centra en las actividades de escritura, lectura, y tramitación del sistema.
 

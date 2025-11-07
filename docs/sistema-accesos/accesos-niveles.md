@@ -6,19 +6,7 @@ parent: Sistema de Accesos
 has_children: false
 ---
 
-| Inicio                                  |
-| --------------------------------------- |
-| [Inicio]({{ site.baseurl }}/index.html) |
-
-| Sistema de accesos                                                           |
-| ---------------------------------------------------------------------------- |
-| [Roles]({{ site.baseurl }}/sistema-accesos/accesos-roles.html)               |
-| [Niveles de acceso]({{ site.baseurl }}/sistema-accesos/accesos-niveles.html) |
-
-
-# 🔐 Sistema de Accesos
-
-## 🎯 Niveles de Acceso
+# 🎯 Niveles de Acceso
 
 | Nivel | Permiso             | Descripción                                                         |
 | :---: | :------------------ | :------------------------------------------------------------------ |
@@ -30,38 +18,38 @@ has_children: false
 
 ---
 
-## 🔍 Descripción Detallada
+# 🔍 Descripción Detallada
 
-### 🛠️ 1. Administrador
+## 🛠️ 1. Administrador
 
 - **Enfoque**: Configuración del sistema
 - **Funciones**: Supervisión y verificación de operaciones
 - **Acceso**: Completo al sistema
 
-### ✏️ 2. Usuario con permiso: Escribir
+## ✏️ 2. Usuario con permiso: Escribir
 
 - **Enfoque**: Operaciones del sistema
 - **Funciones**: Creación, edición y eliminación de operaciones
 - **Acceso**: Modificación de datos
 
-### 📋 3. Usuario con permiso: Tramitar
+## 📋 3. Usuario con permiso: Tramitar
 
 - **Funciones**: Supervisión y verificación de operaciones
 - **Acceso**: Nivel operativo
 
-### 👀 4. Usuario con permiso: Leer
+## 👀 4. Usuario con permiso: Leer
 
 - **Funciones**: Solo actividades de lectura
 - **Acceso**: Consulta limitada
 
-### 🔒 5. Usuario sin permisos
+## 🔒 5. Usuario sin permisos
 
 - **Acceso**: Muy limitado
 - **Funciones**: Solo actividades comunes del sistema
 
 ---
 
-## ⚙️ Gestión de Niveles de Acceso
+# ⚙️ Gestión de Niveles de Acceso
 
 La gestión de accesos se realiza mediante:
 

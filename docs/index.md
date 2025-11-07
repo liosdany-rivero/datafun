@@ -5,13 +5,14 @@ nav_order: 1
 has_children: false
 ---
 
-| Inicio                                  |
-| --------------------------------------- |
-| [Inicio]({{ site.baseurl }}/index.html) |
+# Documentación DataFun ERP
 
-| Sistema de accesos                                                           |
-| ---------------------------------------------------------------------------- |
-| [Roles]({{ site.baseurl }}/sistema-accesos/accesos-roles.html)               |
-| [Niveles de acceso]({{ site.baseurl }}/sistema-accesos/accesos-niveles.html) |
+Bienvenido a la documentación técnica del sistema DataFun ERP.
 
+## Características principales
 
+- Sistema de accesos y permisos
+- Gestión de operaciones
+- Módulos integrados
+
+[Empezar con el sistema de accesos →](sistema-accesos/accesos-roles.html)
