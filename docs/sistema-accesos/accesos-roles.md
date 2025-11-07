@@ -1,8 +1,9 @@
 ---
 layout: default
-title: Sistema de Accesos
+title: Roles de Acceso
 nav_order: 2
-parent: sistema-accesos
+parent: Sistema de Accesos
+has_children: false
 ---
 
 | Inicio                                  |
