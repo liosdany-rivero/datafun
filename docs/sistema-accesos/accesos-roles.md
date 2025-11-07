@@ -1,3 +1,15 @@
+---
+layout: default
+title: Sistema de Accesos
+nav_order: 2
+parent: Características
+---
+
+| Sistema de accesos                                                           |
+| ---------------------------------------------------------------------------- |
+| [Roles]({{ site.baseurl }}/sistema-accesos/accesos-niveles.html)             |
+| [Niveles de acceso]({{ site.baseurl }}/sistema-accesos/accesos-niveles.html) |
+
 # 🔐 Sistema de Accesos
 
 ## 👥 Roles del Sistema

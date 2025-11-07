@@ -4,6 +4,9 @@ title: Documentación técnica.
 nav_order: 1
 ---
 
-| Características                                                               |
-| ----------------------------------------------------------------------------- |
-| [Sistema de accesos]({{ site.baseurl }}/caracteristicas/accesos-niveles.html) |
+| Sistema de accesos                                                           |
+| ---------------------------------------------------------------------------- |
+| [Roles]({{ site.baseurl }}/sistema-accesos/accesos-niveles.html)             |
+| [Niveles de acceso]({{ site.baseurl }}/sistema-accesos/accesos-niveles.html) |
+
+
