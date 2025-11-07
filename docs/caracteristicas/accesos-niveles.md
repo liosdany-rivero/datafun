@@ -5,6 +5,7 @@ nav_order: 2
 parent: Características
 ---
 
+[Inicio]({{ site.baseurl }}index.html) 
 
 # 🔐 Sistema de Accesos
 
