@@ -1,9 +1,17 @@
+---
+layout: default
+title: Sistema de Accesos
+nav_order: 2
+parent: Características
+---
+
+
 # 🔐 Sistema de Accesos
 
 ## 🎯 Niveles de Acceso
 
-| Nivel | Permiso              | Descripción                                                         |
-| :---: | :------------------- | :------------------------------------------------------------------ |
+| Nivel | Permiso             | Descripción                                                         |
+| :---: | :------------------ | :------------------------------------------------------------------ |
 | **1** | 🛠️ **Administrador** | Configuración del sistema y supervisión/verificación de operaciones |
 | **2** | ✏️ **Escribir**      | Creación, edición y eliminación de operaciones del sistema          |
 | **3** | 📋 **Tramitar**      | Supervisión y verificación de operaciones                           |

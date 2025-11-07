@@ -7,5 +7,7 @@ plugins:
   - jekyll-sitemap
   - jekyll-seo-tag
 
+# Configuración de navegación
 nav_order:
   - index.md
+  - caracteristicas/Accesos_Niveles.md

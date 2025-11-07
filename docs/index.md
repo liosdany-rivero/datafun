@@ -6,4 +6,4 @@ nav_order: 1
 
 | Características                                                               |
 | ----------------------------------------------------------------------------- |
-| [Sistema de accesos]({{ site.baseurl }}/caracteristicas/Accesos_Niveles.html) |
+| [Sistema de accesos]({{ site.baseurl }}/caracteristicas/accesos-niveles.html) |
