@@ -2,7 +2,7 @@
 layout: default
 title: Sistema de Accesos
 nav_order: 2
-parent: Características
+parent: sistema-accesos
 ---
 
 | Inicio                                  |

@@ -2,7 +2,7 @@
 layout: default
 title: Sistema de Accesos
 nav_order: 3
-parent: Características
+parent: sistema-accesos
 ---
 
 | Inicio                                  |
@@ -13,6 +13,7 @@ parent: Características
 | ---------------------------------------------------------------------------- |
 | [Roles]({{ site.baseurl }}/sistema-accesos/accesos-roles.html)               |
 | [Niveles de acceso]({{ site.baseurl }}/sistema-accesos/accesos-niveles.html) |
+
 
 # 🔐 Sistema de Accesos
 

@@ -2,7 +2,7 @@ title: "DataFun - ERP"
 description: "Sistema web de gestión ERP"
 baseurl: "/datafun"
 url: "https://liosdany-rivero.github.io"
-theme: jekyll-theme-cayman
+remote_theme: just-the-docs/just-the-docs
 plugins:
   - jekyll-sitemap
   - jekyll-seo-tag
