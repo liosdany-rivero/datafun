@@ -5,6 +5,10 @@ nav_order: 3
 parent: Características
 ---
 
+| Inicio                                  |
+| --------------------------------------- |
+| [Inicio]({{ site.baseurl }}/index.html) |
+
 | Sistema de accesos                                                           |
 | ---------------------------------------------------------------------------- |
 | [Roles]({{ site.baseurl }}/sistema-accesos/accesos-niveles.html)             |
