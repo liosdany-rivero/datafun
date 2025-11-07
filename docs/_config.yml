@@ -8,7 +8,7 @@ plugins:
   - jekyll-seo-tag
 
 nav_order:
-  - _index.md
+  - index.md
   - instalacion.md
   - estructura.md
   - modulos.md
