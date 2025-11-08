@@ -2,30 +2,32 @@
 layout: default
 title: Inicio
 nav_order: 1
-has_children: false
 ---
 
-# 📄 Documentación técnica
+# Documentación de DataFun ERP
 
-El presente recoge la documentación técnica de la aplicación DataFun desarrollada por liosdany-rivero (GitHub) 
+Bienvenido a la documentación oficial de DataFun ERP, un sistema completo de gestión empresarial.
 
+## Características principales
 
-# 🧠 DataFun ERP
+- **Gestión de Ventas**: Control completo del ciclo de ventas
+- **Inventario**: Administración de stock y almacenes
+- **Contabilidad**: Sistema financiero integrado
+- **Reportes**: Análisis y reportes en tiempo real
 
-**DataFun** es una aplicación ERP modular y ligera diseñada para integrar todas las áreas operativas de una compañía en una única plataforma funcional, accesible y personalizable.
+## Comenzar
 
----
+- [Introducción](docs/introduccion.html) - Conoce DataFun ERP
+- [Instalación](docs/instalacion.html) - Guía de instalación
+- [Configuración](docs/configuracion.html) - Configuración inicial
 
-## 🚀 Objetivo 
+## Módulos disponibles
 
-Centralizar la gestión empresarial en un entorno eficiente, adaptable.  
-DataFun busca eliminar la fragmentación entre departamentos, automatizar procesos clave y ofrecer una experiencia clara tanto para usuarios técnicos como administrativos.
+- [Ventas](docs/modulos/ventas.html) - Gestión comercial
+- [Inventario](docs/modulos/inventario.html) - Control de stock
+- [Contabilidad](docs/modulos/contabilidad.html) - Sistema financiero
 
----
+## Enlaces útiles
 
-## ⚙️ Tecnologías utilizadas
-
-- **Frontend**: HTML, CSS, JavaScript
-- **Backend**: PHP + MySQL (estructura modular)
-- **Automatización**: Bash scripts para instalación y mantenimiento
-- **Compatibilidad**: Windows, Linux, Android (Termux), integración con GitHub
+- [Repositorio GitHub](https://github.com/liosdany-rivero/datafun)
+- [Reportar un issue](https://github.com/liosdany-rivero/datafun/issues)

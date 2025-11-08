@@ -10,7 +10,7 @@ remote_theme: just-the-docs/just-the-docs
 lang: es
 search_enabled: true
 
-# Plugins (con Just the Docs algunos no son necesarios)
+# Plugins
 plugins:
   - jekyll-sitemap
   - jekyll-seo-tag
@@ -19,11 +19,32 @@ plugins:
 aux_links:
   "Repositorio GitHub": "https://github.com/liosdany-rivero/datafun"
 
-# Opcional: Color scheme
-color_scheme: dark # o dark, auto
+# Color scheme dark
+color_scheme: dark
 
 # Heading anchors
 heading_anchors: true
 
 # Callouts
 callbacks_level: quiet
+
+# Navegación
+nav_external_links:
+  - title: "GitHub Repo"
+    url: "https://github.com/liosdany-rivero/datafun"
+
+# Colecciones
+collections:
+  docs:
+    permalink: "/:path/"
+    output: true
+
+# Configuración por defecto
+defaults:
+  - scope:
+      path: ""
+      type: docs
+    values:
+      layout: default
+      search: true
+      toc: true
