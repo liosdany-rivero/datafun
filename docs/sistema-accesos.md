@@ -12,8 +12,8 @@ Documentación completa del sistema de accesos y permisos del ERP DataFun.
 
 ## Contenido
 
-1. [Roles de Acceso](accesos-roles.html)
-2. [Niveles de Permisos](accesos-niveles.html)
+1. [Roles de Acceso](./sistema-accesos/accesos-roles.html)
+2. [Niveles de Permisos](./sistema-accesos/accesos-niveles.html)
 
 ---
 

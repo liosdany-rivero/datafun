@@ -17,10 +17,10 @@ plugins:
 
 # Configuración de Just the Docs
 aux_links:
-  "Repositorio GitHub": "https://github.com/tu-usuario/datafun"
+  "Repositorio GitHub": "https://github.com/liosdany-rivero/datafun"
 
 # Opcional: Color scheme
-color_scheme: dark  # o dark, auto
+color_scheme: dark # o dark, auto
 
 # Heading anchors
 heading_anchors: true
