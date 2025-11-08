@@ -17,4 +17,4 @@ Documentación completa del sistema de accesos y permisos del ERP DataFun.
 
 ---
 
-El sistema de accesos permite gestionar permisos de usuarios mediante...
+El sistema de accesos permite gestionar permisos de usuarios en la aplicación.
