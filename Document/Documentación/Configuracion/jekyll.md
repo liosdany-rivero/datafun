@@ -307,3 +307,6 @@ Lo que deberías ver:
 - Menú de navegación a la izquierda
 - Título "DataFun - ERP"
 - Tu contenido de index.md mostrado
+
+
+

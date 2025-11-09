@@ -4,9 +4,12 @@ title: "Inicio"
 nav_order: 1
 ---
 
-# Bienvenido a DataFun ERP sss
+
+# Bienvenido a DataFun ERP
 
 Sistema web de gestión empresarial.
+
+
 
 ## Características principales
 
@@ -15,6 +18,7 @@ Sistema web de gestión empresarial.
 - Dashboard interactivo
 - Análisis en tiempo real
 
-## Comenzar
 
-Visita nuestra documentación para más detalles.
+
+---
+*Sistema desarrollado con Jekyll y Just the Docs*

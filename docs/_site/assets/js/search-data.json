@@ -1,10 +1,10 @@
 {"0": {
     "doc": "Inicio",
-    "title": "Bienvenido a DataFun ERP sss",
-    "content": "Sistema web de gestión empresarial. ",
-    "url": "/datafun/#bienvenido-a-datafun-erp-sss",
+    "title": "Bienvenido a DataFun ERP",
+    "content": "Sistema web de gestión empresarial. URL Actual: http://localhost:4000/datafun . ",
+    "url": "/datafun/#bienvenido-a-datafun-erp",
     
-    "relUrl": "/#bienvenido-a-datafun-erp-sss"
+    "relUrl": "/#bienvenido-a-datafun-erp"
   },"1": {
     "doc": "Inicio",
     "title": "Características principales",
@@ -14,15 +14,15 @@
     "relUrl": "/#características-principales"
   },"2": {
     "doc": "Inicio",
-    "title": "Comenzar",
-    "content": "Visita nuestra documentación para más detalles. ",
-    "url": "/datafun/#comenzar",
+    "title": "Entorno:  🔧 DESARROLLO",
+    "content": ". Sistema desarrollado con Jekyll y Just the Docs . ",
+    "url": "/datafun/#entorno---desarrollo",
     
-    "relUrl": "/#comenzar"
+    "relUrl": "/#entorno---desarrollo"
   },"3": {
     "doc": "Inicio",
     "title": "Inicio",
-    "content": " ",
+    "content": "# . ",
     "url": "/datafun/",
     
     "relUrl": "/"

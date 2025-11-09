@@ -1,15 +1,25 @@
+# ruby
+
 source "https://rubygems.org"
 
 gem "jekyll", "~> 4.4.1"
 gem "just-the-docs"
-gem "webrick"
 
-# Plugins opcionales
+# Desarrollo Local
+# gem "webrick"
+
+# GitHub Pages
+gem "jekyll-remote-theme"
+
+# Plugins opcionales (mantener en ambos entornos)
 gem "jekyll-sitemap"
 gem "jekyll-seo-tag"
 
-# Grupo de plugins de Jekyll
+# Grupo de plugins de Jekyll (mantener en ambos entornos)
 group :jekyll_plugins do
   gem "jekyll-sitemap"
   gem "jekyll-seo-tag"
-end 
+end
+
+# GitHub Pages 
+gem "github-pages", group: :jekyll_plugins
