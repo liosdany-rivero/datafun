@@ -1,57 +1,29 @@
 title: "DataFun - ERP"
 description: "Sistema web de gestión ERP"
-
-# Desarrollo Local
-# baseurl: "/datafun"
-# url: "http://localhost:4000"
-
-# GitHub Pages
 baseurl: "/datafun"
 url: "https://liosdany-rivero.github.io"
 
-# Desarrollo local
-# theme: just-the-docs
-
-# GitHub Pages
+# Tema Just the Docs
 remote_theme: just-the-docs/just-the-docs
 
-# Configuración básica (mantener en ambos entornos)
-lang: "es"
+# Configuración básica
+lang: es
 search_enabled: true
 
-# Plugins
+# Plugins (con Just the Docs algunos no son necesarios)
 plugins:
-  # GitHub Pages
-  - jekyll-remote-theme
-
-  # plugins (mantener en ambos entornos)
   - jekyll-sitemap
   - jekyll-seo-tag
 
-# Configuración de Just the Docs (mantener en ambos entornos)
+# Configuración de Just the Docs
 aux_links:
   "Repositorio GitHub": "https://github.com/liosdany-rivero/datafun"
 
-color_scheme: "dark"
+# Opcional: Color scheme
+color_scheme: dark # o dark, auto
+
+# Heading anchors
 heading_anchors: true
 
-# Navegación (mantener en ambos entornos)
-nav_external_links:
-  - title: "GitHub Repo"
-    url: "https://github.com/liosdany-rivero/datafun"
-
-# Colecciones (mantener en ambos entornos)
-collections:
-  docs:
-    permalink: "/:path/"
-    output: true
-
-# Configuración por defecto (mantener en ambos entornos)
-defaults:
-  - scope:
-      path: ""
-      type: docs
-    values:
-      layout: "default"
-      search: true
-      toc: true
+# Callouts
+callbacks_level: quiet
