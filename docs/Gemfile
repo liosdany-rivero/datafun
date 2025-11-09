@@ -1,14 +1,15 @@
 source "https://rubygems.org"
 
-gem "jekyll"
+gem "jekyll", "~> 4.4.1"
 gem "just-the-docs"
-gem "jekyll-sitemap"
-gem "jekyll-seo-tag"
 gem "webrick"
 
-# Windows compatibility
-gem "tzinfo-data", platforms: [:mingw, :mswin, :x64_mingw, :jruby]
+# Plugins opcionales
+gem "jekyll-sitemap"
+gem "jekyll-seo-tag"
 
+# Grupo de plugins de Jekyll
 group :jekyll_plugins do
-  gem "jekyll-feed"
-end
+  gem "jekyll-sitemap"
+  gem "jekyll-seo-tag"
+end 

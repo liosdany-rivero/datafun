@@ -1,0 +1,30 @@
+{"0": {
+    "doc": "Inicio",
+    "title": "Bienvenido a DataFun ERP",
+    "content": "Sistema web de gestión empresarial. ",
+    "url": "/datafun/#bienvenido-a-datafun-erp",
+    
+    "relUrl": "/#bienvenido-a-datafun-erp"
+  },"1": {
+    "doc": "Inicio",
+    "title": "Características principales",
+    "content": ". | Gestión de datos centralizada | Reportes automáticos | Dashboard interactivo | Análisis en tiempo real | . ",
+    "url": "/datafun/#caracter%C3%ADsticas-principales",
+    
+    "relUrl": "/#características-principales"
+  },"2": {
+    "doc": "Inicio",
+    "title": "Comenzar",
+    "content": "Visita nuestra documentación para más detalles. ",
+    "url": "/datafun/#comenzar",
+    
+    "relUrl": "/#comenzar"
+  },"3": {
+    "doc": "Inicio",
+    "title": "Inicio",
+    "content": " ",
+    "url": "/datafun/",
+    
+    "relUrl": "/"
+  }
+}
