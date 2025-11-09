@@ -17,9 +17,12 @@ gem "jekyll-seo-tag"
 
 # Grupo de plugins de Jekyll (mantener en ambos entornos)
 group :jekyll_plugins do
+# GitHub Pages
+  gem "jekyll-remote-theme"
+#(mantener en ambos entornos)
   gem "jekyll-sitemap"
   gem "jekyll-seo-tag"
-# GitHub Pages 
-gem "github-pages", group: :jekyll_plugins
 end
 
+# GitHub Pages 
+gem "github-pages", group: :jekyll_plugins

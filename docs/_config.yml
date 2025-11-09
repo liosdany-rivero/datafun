@@ -6,7 +6,7 @@ description: "Sistema web de gestión ERP"
 # url: "http://localhost:4000"
 
 # GitHub Pages
-baseurl: ""
+baseurl: "/datafun"
 url: "https://liosdany-rivero.github.io"
 
 # Desarrollo local
