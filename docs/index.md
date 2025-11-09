@@ -4,7 +4,7 @@ title: "Inicio"
 nav_order: 1
 ---
 
-# Bienvenido a DataFun ERP
+# Bienvenido a DataFun ERP sss
 
 Sistema web de gestión empresarial.
 
