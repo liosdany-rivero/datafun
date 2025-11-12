@@ -4,21 +4,29 @@ title: "Inicio"
 nav_order: 1
 ---
 
+# 📄 Documentación técnica
+El presente recoge la documentación técnica de la aplicación **DataFun** desarrollada por **liosdany-rivero (GitHub)** 
 
-# Bienvenido a DataFun ERP
+## 📄 Contenido
 
-Sistema web de gestión empresarial.
-
-
-
-## Características principales
-
-- Gestión de datos centralizada
-- Reportes automáticos  
-- Dashboard interactivo
-- Análisis en tiempo real
+[🧠 1. DataFun](#1--datafun)    
+[🚀 2. Objetivo ](#2--objetivo)  
+[⚙️ 3. Tecnologías utilizadas](#3-️-tecnologías-utilizadas-utilizadas)  
 
 
+## 1. 🧠 DataFun
 
----
-*Sistema desarrollado con Jekyll y Just the Docs*
+**DataFun** es una aplicación ERP modular y ligera diseñada para integrar todas las áreas operativas de una compañía en una única plataforma funcional, accesible y personalizable.
+
+## 2. 🚀 Objetivo 
+
+- Centralizar la gestión empresarial en un entorno eficiente, adaptable.  
+- Eliminar la fragmentación entre departamentos.
+- Automatizar procesos clave.
+- Ofrecer una experiencia clara tanto para usuarios como administrativos.
+
+## 3. ⚙️ Tecnologías utilizadas
+
+- **Frontend**: HTML, CSS, JavaScript
+- **Backend**: PHP + MySQL (estructura modular)
+- **Compatibilidad**: Chrome, Edge, Brave, Firefox, Opera, Vivaldi, integración con GitHub

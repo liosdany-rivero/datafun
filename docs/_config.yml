@@ -1,19 +1,19 @@
-title: "DataFun - ERP"
+title: "DataFun"
 description: "Sistema web de gestión ERP"
 
 # Desarrollo Local
-# baseurl: "/datafun"
-# url: "http://localhost:4000"
+baseurl: "/datafun"
+url: "http://localhost:4000"
 
 # GitHub Pages
-baseurl: "/datafun"
-url: "https://liosdany-rivero.github.io"
+# baseurl: "/datafun"
+# url: "https://liosdany-rivero.github.io"
 
 # Desarrollo local
-# theme: just-the-docs
+theme: just-the-docs
 
 # GitHub Pages
-remote_theme: just-the-docs/just-the-docs
+# remote_theme: just-the-docs/just-the-docs
 
 # Configuración básica (mantener en ambos entornos)
 lang: "es"
@@ -22,7 +22,7 @@ search_enabled: true
 # Plugins
 plugins:
   # GitHub Pages
-  - jekyll-remote-theme
+  # - jekyll-remote-theme
 
   # plugins (mantener en ambos entornos)
   - jekyll-sitemap
@@ -40,13 +40,13 @@ nav_external_links:
   - title: "GitHub Repo"
     url: "https://github.com/liosdany-rivero/datafun"
 
-# Colecciones (mantener en ambos entornos)
+# Colecciones para Just the Docs
 collections:
   docs:
     permalink: "/:path/"
     output: true
 
-# Configuración por defecto (mantener en ambos entornos)
+# Configuración por defecto para páginas
 defaults:
   - scope:
       path: ""
@@ -55,3 +55,19 @@ defaults:
       layout: "default"
       search: true
       toc: true
+  - scope:
+      path: "_pages"
+      type: docs
+    values:
+      layout: "default"
+      search: true
+      toc: true
+      nav_order: 10 # Orden por defecto para páginas en _pages
+
+# Configuración específica para Just the Docs
+just_the_docs:
+  collections:
+    docs:
+      name: "Documentación"
+      nav_exclude: false
+      nav_fold: true

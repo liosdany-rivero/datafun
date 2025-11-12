@@ -1,30 +1,170 @@
 {"0": {
     "doc": "Inicio",
-    "title": "Bienvenido a DataFun ERP",
-    "content": "Sistema web de gestión empresarial. URL Actual: http://localhost:4000/datafun . ",
-    "url": "/datafun/#bienvenido-a-datafun-erp",
+    "title": "📄 Documentación técnica",
+    "content": "El presente recoge la documentación técnica de la aplicación DataFun desarrollada por liosdany-rivero (GitHub) . ",
+    "url": "/datafun/#-documentaci%C3%B3n-t%C3%A9cnica",
     
-    "relUrl": "/#bienvenido-a-datafun-erp"
+    "relUrl": "/#-documentación-técnica"
   },"1": {
     "doc": "Inicio",
-    "title": "Características principales",
-    "content": ". | Gestión de datos centralizada | Reportes automáticos | Dashboard interactivo | Análisis en tiempo real | . ",
-    "url": "/datafun/#caracter%C3%ADsticas-principales",
+    "title": "📄 Contenido",
+    "content": "🧠 1. DataFun 🚀 2. Objetivo ⚙️ 3. Tecnologías utilizadas . ",
+    "url": "/datafun/#-contenido",
     
-    "relUrl": "/#características-principales"
+    "relUrl": "/#-contenido"
   },"2": {
     "doc": "Inicio",
-    "title": "Entorno:  🔧 DESARROLLO",
-    "content": ". Sistema desarrollado con Jekyll y Just the Docs . ",
-    "url": "/datafun/#entorno---desarrollo",
+    "title": "1. 🧠 DataFun",
+    "content": "DataFun es una aplicación ERP modular y ligera diseñada para integrar todas las áreas operativas de una compañía en una única plataforma funcional, accesible y personalizable. ",
+    "url": "/datafun/#1--datafun",
     
-    "relUrl": "/#entorno---desarrollo"
+    "relUrl": "/#1--datafun"
   },"3": {
     "doc": "Inicio",
+    "title": "2. 🚀 Objetivo",
+    "content": ". | Centralizar la gestión empresarial en un entorno eficiente, adaptable. | Eliminar la fragmentación entre departamentos. | Automatizar procesos clave. | Ofrecer una experiencia clara tanto para usuarios como administrativos. | . ",
+    "url": "/datafun/#2--objetivo",
+    
+    "relUrl": "/#2--objetivo"
+  },"4": {
+    "doc": "Inicio",
+    "title": "3. ⚙️ Tecnologías utilizadas",
+    "content": ". | Frontend: HTML, CSS, JavaScript | Backend: PHP + MySQL (estructura modular) | Compatibilidad: Chrome, Edge, Brave, Firefox, Opera, Vivaldi, integración con GitHub | . ",
+    "url": "/datafun/#3-%EF%B8%8F-tecnolog%C3%ADas-utilizadas",
+    
+    "relUrl": "/#3-️-tecnologías-utilizadas"
+  },"5": {
+    "doc": "Inicio",
     "title": "Inicio",
-    "content": "# . ",
+    "content": " ",
     "url": "/datafun/",
     
     "relUrl": "/"
+  },"6": {
+    "doc": "Módulos",
+    "title": "📦 Módulos de DataFun",
+    "content": "DataFun está compuesto por módulos especializados que se integran para ofrecer una solución ERP completa. ",
+    "url": "/datafun/modulos/#-m%C3%B3dulos-de-datafun",
+    
+    "relUrl": "/modulos/#-módulos-de-datafun"
+  },"7": {
+    "doc": "Módulos",
+    "title": "📄 Contenido",
+    "content": ". | Sistema | Catálogos | Tasas | Almacenes | Cajas | . ",
+    "url": "/datafun/modulos/#-contenido",
+    
+    "relUrl": "/modulos/#-contenido"
+  },"8": {
+    "doc": "Módulos",
+    "title": "Módulos",
+    "content": " ",
+    "url": "/datafun/modulos/",
+    
+    "relUrl": "/modulos/"
+  },"9": {
+    "doc": "Sistema",
+    "title": "⚙️ Sistema",
+    "content": "El módulo Sistema contiene todas las funciones de administración de la aplicación. | 📁 Ubicacion: datafun\\app\\views\\system | ☰ Menú: Inicio y sistema | 🔑 Nivel de acceso: 🛠️ Administrador | . ",
+    "url": "/datafun/modulos/sistema/#%EF%B8%8F-sistema",
+    
+    "relUrl": "/modulos/sistema/#️-sistema"
+  },"10": {
+    "doc": "Sistema",
+    "title": "📄 Contenido",
+    "content": "1. 🏠 Inicio 2. 📦 Respaldar BD 3. 👥 Usuarios 4. 💰 Centros de costos 5. 🔐 Permisoss 6. ❌ IPs Bloqueadas 7. ⚠️ Inicios Fallidos . ",
+    "url": "/datafun/modulos/sistema/#-contenido",
+    
+    "relUrl": "/modulos/sistema/#-contenido"
+  },"11": {
+    "doc": "Sistema",
+    "title": "1. 🏠 Inicio",
+    "content": ". | 📋 Descripción: Esta página PHP funciona como un dashboard de usuario que muestra información personalizada según el rol del usuario autenticado. Se utiliza como pantalla de Bienvenida al sistema. | 📁 Ubicacion: datafun\\app\\views\\system\\dashboard.php | 🎨 Templates: . | datafun\\app\\templates\\header.php | datafun\\app\\templates\\footer.php | . | ⚙️ Controladores: No tiene. | ☰ Menú: Inicio | 🔑 Nivel de acceso: . | 🛠️ Administrador | 👤 Usuario | . | 🛢️ Tablas: No tiene. | 🛡️ Seguridad: . | Protección XSS (Cross-Site Scripting) | Manejo de Sesiones | . | 🔣 Variables: $_SESSION['username']: // Nombre del usuario $_SESSION['role']: // Rol del usuario . | 💻 Funciones: . | Muestra la información del usuario logueado (usuario y rol). | Muestra contenido diferente según el rol. | . | 🚀 Escalabilidad . | Desarrollar un sistema de noticias y novedades. | Que esta pagina sirva para que el usuario pueda maantenerse informado. | . | . ",
+    "url": "/datafun/modulos/sistema/#1--inicio",
+    
+    "relUrl": "/modulos/sistema/#1--inicio"
+  },"12": {
+    "doc": "Sistema",
+    "title": "2. 📦 Respaldar BD",
+    "content": ". | 📋 Descripción: Script PHP para generación automática de respaldos completos de base de datos MySQL/MariaDB, incluyendo estructura, datos y compresión en formato ZIP. | 📁 Ubicacion: No tiene view. | 🎨 Templates: No utiliza templates. | ⚙️ Controladores: . | datafun\\app\\controllers\\exportar_bd.php -&gt; Contiene la logica del respaldo y descarga de la base de datos. | datafun\\app\\controllers\\auth_admin_check.php -&gt; Contiene la logica para confirmar que un administrador este logueado. | datafun\\app\\controllers\\config.php -&gt; Configuración de base de datos | . | ☰ Menú: Sistema &gt; Respaldar BD | 🔑 Nivel de acceso: 🛠️ Administrador | 🛢️ Tablas: Involucra todas las tablas de la base de datos. | 🛡️ Seguridad: . | Manejo de Sesiones | Control de Permisos | . | 🔣 Variables: $_SESSION['username']: // Nombre del usuario $_SESSION['role']: // Rol del usuario . | 💻 Funciones: . | Muestra la información del usuario logueado (usuario y rol). | Muestra contenido diferente según el rol. | . | 🚀 Escalabilidad . | Desarrollar un sistema de noticias y novedades. | Que esta pagina sirva para que el usuario pueda maantenerse informado. | . | . 👁️ Páginas Visibles . No incluye interfaces visuales para el usuario final . ",
+    "url": "/datafun/modulos/sistema/#2--respaldar-bd",
+    
+    "relUrl": "/modulos/sistema/#2--respaldar-bd"
+  },"13": {
+    "doc": "Sistema",
+    "title": "3. 👥 Usuarios",
+    "content": " ",
+    "url": "/datafun/modulos/sistema/#3--usuarios",
+    
+    "relUrl": "/modulos/sistema/#3--usuarios"
+  },"14": {
+    "doc": "Sistema",
+    "title": "4. 💰 Centros de costos",
+    "content": " ",
+    "url": "/datafun/modulos/sistema/#4--centros-de-costos",
+    
+    "relUrl": "/modulos/sistema/#4--centros-de-costos"
+  },"15": {
+    "doc": "Sistema",
+    "title": "5. 🔐 Permisos",
+    "content": " ",
+    "url": "/datafun/modulos/sistema/#5--permisos",
+    
+    "relUrl": "/modulos/sistema/#5--permisos"
+  },"16": {
+    "doc": "Sistema",
+    "title": "6. ❌ IPs Bloqueadas",
+    "content": " ",
+    "url": "/datafun/modulos/sistema/#6--ips-bloqueadas",
+    
+    "relUrl": "/modulos/sistema/#6--ips-bloqueadas"
+  },"17": {
+    "doc": "Sistema",
+    "title": "7. ⚠️ Inicios Fallidos",
+    "content": " ",
+    "url": "/datafun/modulos/sistema/#7-%EF%B8%8F-inicios-fallidos",
+    
+    "relUrl": "/modulos/sistema/#7-️-inicios-fallidos"
+  },"18": {
+    "doc": "Sistema",
+    "title": "Sistema",
+    "content": " ",
+    "url": "/datafun/modulos/sistema/",
+    
+    "relUrl": "/modulos/sistema/"
+  },"19": {
+    "doc": "Sistema de Accesos",
+    "title": "🔐 Sistema de Accesos",
+    "content": "Documentación completa del sistema de accesos y permisos del ERP DataFun. ",
+    "url": "/datafun/sistema-accesos/#-sistema-de-accesos",
+    
+    "relUrl": "/sistema-accesos/#-sistema-de-accesos"
+  },"20": {
+    "doc": "Sistema de Accesos",
+    "title": "📄 Contenido",
+    "content": "👥 1. Roles del Sistema 🎯 2. Niveles de Acceso . ",
+    "url": "/datafun/sistema-accesos/#-contenido",
+    
+    "relUrl": "/sistema-accesos/#-contenido"
+  },"21": {
+    "doc": "Sistema de Accesos",
+    "title": "1. 👥 Roles del Sistema",
+    "content": ". | 🛠️ Administrador . | Se centra en actividades de la configuracón del sistema. | Realiza actividades de supervición y verificacion de operaciones. | . | 👤 Usuario . | Se centra en las actividades de escritura, lectura, y tramitación del sistema. | . | . 1.1 ⚙️ Gestión de roles . 📌 La administración de roles se realiza mediante: datafun\\app\\views\\system\\usuarios.php 📌 Este archivo se ejecuta desde el menú: Sistema&gt;Usuarios . ",
+    "url": "/datafun/sistema-accesos/#1--roles-del-sistema",
+    
+    "relUrl": "/sistema-accesos/#1--roles-del-sistema"
+  },"22": {
+    "doc": "Sistema de Accesos",
+    "title": "2. 🎯 Niveles de Acceso",
+    "content": "| Nivel | Permiso | Descripción | . | 1 | 🛠️ Administrador | Configuración del sistema y supervisión/verificación de operaciones | . | 2 | ✏️ Escribir | Creación, edición y eliminación de operaciones del sistema | . | 3 | 📋 Tramitar | Supervisión y verificación de operaciones | . | 4 | 👀 Leer | Solo actividades de lectura de operaciones | . | 5 | 🔒 Sin permisos | Acceso limitado a actividades comunes del sistema | . 2.1 🔍 Descripción Detallada . | 🛠️ Administrador . | Enfoque: Configuración del sistema | Funciones: Supervisión y verificación de operaciones | Acceso: Completo al sistema | . | ✏️ Usuario con permiso: Escribir . | Enfoque: Operaciones del sistema | Funciones: Creación, edición y eliminación de operaciones | Acceso: Modificación de datos | . | 📋 Usuario con permiso: Tramitar . | Funciones: Supervisión y verificación de operaciones | Acceso: Nivel operativo | . | 👀 Usuario con permiso: Leer . | Funciones: Solo actividades de lectura | Acceso: Consulta limitada | . | 🔒 Usuario sin permisos . | Acceso: Muy limitado | Funciones: Solo actividades comunes del sistema | . | . 2.2 ⚙️ Gestión de Niveles de Acceso . 📌 La gestión de accesos se realiza mediante: datafun\\app\\views\\system\\usuarios.php datafun\\app\\views\\system\\permisos.php 📌 Estos archivos se ejecutan desde el menú: Sistema&gt;Usuarios Sistema&gt;Permisos . ",
+    "url": "/datafun/sistema-accesos/#2--niveles-de-acceso",
+    
+    "relUrl": "/sistema-accesos/#2--niveles-de-acceso"
+  },"23": {
+    "doc": "Sistema de Accesos",
+    "title": "Sistema de Accesos",
+    "content": " ",
+    "url": "/datafun/sistema-accesos/",
+    
+    "relUrl": "/sistema-accesos/"
   }
 }

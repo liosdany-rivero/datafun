@@ -1,134 +1,129 @@
 <?php
-// Verificación de sesión - Debe ser lo primero en el archivo
+
+/**
+ * Proyecto: Datafun
+ * Desarrollador: liosdany-rivero (GitHub)
+ * Fecha: Noviembre 2025
+ */
+
+//================================================================================================
+// 1. Configuración y Seguridad
+//================================================================================================
+
+// 1.2 Control de secciones
 if (session_status() === PHP_SESSION_NONE) {
-    session_start(); // Inicia la sesión si no está activa
+    session_start();
 }
 
-// Incluye el archivo de verificación de autenticación del usuario
+// 1.2. Verificación de Autenticación
 require_once('auth_admin_check.php');
 
-// Verificación de permisos - Solo administradores pueden acceder
+// 1.3. Control de Permisos
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'Administrador') {
     die("Acceso denegado: solo administradores pueden respaldar la base de datos.");
 }
 
-// Incluye la configuración de la base de datos
+// 1.4. Configuración de Base de Datos
 require_once 'config.php';
 
-// Establece la zona horaria para los registros de fecha/hora
+// 1.5 Configuración Regional
 date_default_timezone_set('America/Havana');
 
-// Verificación de conexión a la base de datos
+
+//================================================================================================
+// 2. Verificación de Conexión a BD
+//================================================================================================
+
 if (!isset($conn) || $conn->connect_error) {
     die("Error de conexión: " . $conn->connect_error);
 }
 
-// ==============================================
-// SECCIÓN DE GENERACIÓN DEL RESPALDO SQL
-// ==============================================
+//================================================================================================
+// 3. Generación del Respaldo SQL
+//================================================================================================
 
-// Encabezado inicial del archivo SQL con marca de tiempo
+// 3.1. Encabezado y Configuración
 $backup = "-- Respaldo generado el " . date('Y-m-d H:i:s') . "\n\n";
-
-// Fuerza la codificación UTF-8 para los caracteres especiales
 $conn->query("SET NAMES 'utf8'");
 
-// Obtiene todas las tablas de la base de datos
+// 3.2. Obtención de Tablas
 $resultTables = $conn->query("SHOW TABLES");
-
-// Procesa cada tabla encontrada
 while ($row = $resultTables->fetch_row()) {
     $table = $row[0]; // Nombre de la tabla actual
 
-    // ==============================================
-    // ESTRUCTURA DE LA TABLA
-    // ==============================================
-
-    // Obtiene el SQL de creación de la tabla
+    // 3.3. Estructura de Tablas
     $resultCreate = $conn->query("SHOW CREATE TABLE `$table`");
     $createRow = $resultCreate->fetch_assoc();
-
-    // Agrega comentario y estructura al backup
     $backup .= "-- Estructura para tabla `$table`\n";
     $backup .= $createRow['Create Table'] . ";\n\n";
 
-    // ==============================================
-    // DATOS DE LA TABLA
-    // ==============================================
-
-    // Obtiene todos los registros de la tabla
+    // 3.4 Extracción de Datos
     $resultData = $conn->query("SELECT * FROM `$table`");
-
-    // Procesa cada registro de la tabla
     while ($dataRow = $resultData->fetch_assoc()) {
-        // Mapea los nombres de columnas entre backticks
+
+        // 3.5. Construcción de Inserts
         $columns = array_map(fn($col) => "`$col`", array_keys($dataRow));
-
-        // Mapea los valores escapando caracteres especiales y manejando NULLs
         $values = array_map(function ($val) use ($conn) {
-            $val = $conn->real_escape_string($val); // Escapa caracteres especiales
-            return isset($val) ? "'$val'" : "NULL";  // Maneja valores NULL
+            $val = $conn->real_escape_string($val);
+            return isset($val) ? "'$val'" : "NULL";
         }, array_values($dataRow));
-
-        // Construye y agrega el INSERT al backup
         $backup .= "INSERT INTO `$table` (" . implode(", ", $columns) . ") VALUES (" . implode(", ", $values) . ");\n";
     }
-    $backup .= "\n"; // Espacio entre tablas
+    $backup .= "\n";
 }
 
-// ==============================================
-// SECCIÓN DE MANEJO DE ARCHIVOS
-// ==============================================
+//================================================================================================
+// 4. Manejo de Archivos Temporales
+//================================================================================================
 
-// Genera nombre único para el archivo SQL basado en:
-// - Prefijo "respaldo_"
-// - Nombre de la base de datos
-// - Fecha y hora actual (formato YYYYMMDD_HHMMSS)
-$nombre_sql = "respaldo_" . $database . "_" . date("Ymd_His") . ".sql";
+// 4.1. Nomenclatura de Archivos
+$nombre_sql = "datefun_respaldo_db_" . $database . "_" . date("Ymd_His") . ".sql";
 
-// Ruta temporal para guardar el archivo SQL
+// 4.2. Ruta Temporal
 $ruta_sql = sys_get_temp_dir() . DIRECTORY_SEPARATOR . $nombre_sql;
 
-// Guarda el contenido SQL en el archivo temporal
+// 4.3. Escritura de Archivo
 file_put_contents($ruta_sql, $backup);
 
-// ==============================================
-// SECCIÓN DE COMPRESIÓN ZIP
-// ==============================================
+//================================================================================================
+// 5. Sistema de Compresión ZIP
+//================================================================================================
 
-// Nombre del archivo ZIP (mismo nombre que SQL pero con extensión .zip)
+// 5.1. Configuración ZIP
 $nombre_zip = str_replace(".sql", ".zip", $nombre_sql);
-
-// Crea una instancia de ZipArchive
 $zip = new ZipArchive();
 $ruta_zip = sys_get_temp_dir() . DIRECTORY_SEPARATOR . $nombre_zip;
 
-// Intenta crear y abrir el archivo ZIP
+// 5.2. Creación de Archivo ZIP
 if ($zip->open($ruta_zip, ZipArchive::CREATE) === true) {
-    // Agrega el archivo SQL al ZIP
     $zip->addFile($ruta_sql, $nombre_sql);
-    $zip->close(); // Cierra el archivo ZIP
+    $zip->close();
 
-    // ==============================================
-    // SECCIÓN DE DESCARGA
-    // ==============================================
+    //================================================================================================
+    // 6. Descarga al Cliente
+    //================================================================================================
 
-    // Configura headers para forzar la descarga
+    // 6.1. Headers HTTP
     header('Content-Type: application/zip');
     header("Content-Disposition: attachment; filename=\"$nombre_zip\"");
 
-    // Envía el contenido del ZIP al navegador
+    // E6.2. Envío de Contenido
     readfile($ruta_zip);
 
-    // ==============================================
-    // LIMPIEZA DE ARCHIVOS TEMPORALES
-    // ==============================================
+    //================================================================================================
+    // 7. Limpieza de Recursos
+    //================================================================================================
 
-    // Elimina los archivos temporales (SQL y ZIP)
+    // 7.1. Eliminación de Temporales
     unlink($ruta_sql);
     unlink($ruta_zip);
+    exit;
+}
+//================================================================================================
+// 8. Manejo de Errores
+//================================================================================================
 
-    exit; // Termina la ejecución del script
-} else {
+// 8.1. Error de Compresión
+else {
     die("No se pudo crear el archivo zip."); // Manejo de error
 }

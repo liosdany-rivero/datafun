@@ -1,17 +1,5 @@
-# 🖥️ System (Sistema)
 
-## 📦 Respaldo de Base de Datos (Respaldar BD)
 
-### 📋 Descripción
-
-Función utilizada para descargar una copia de seguridad compactada de la base de datos del sistema.
-
----
-
-### 🔐 Acceso
-
-- 🔒 **Exclusivo** para usuarios con rol de administrador
-- 🔑 Requiere autenticación válida y privilegios elevados
 
 ### 👁️ Páginas Visibles
 

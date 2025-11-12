@@ -1,6 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd" xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 <url>
+<loc>http://localhost:4000/datafun/modulos/</loc>
+<lastmod>2025-11-10T20:57:17-05:00</lastmod>
+</url>
+<url>
+<loc>http://localhost:4000/datafun/modulos/sistema/</loc>
+<lastmod>2025-11-10T20:57:17-05:00</lastmod>
+</url>
+<url>
+<loc>http://localhost:4000/datafun/sistema-accesos/</loc>
+<lastmod>2025-11-10T20:57:17-05:00</lastmod>
+</url>
+<url>
 <loc>http://localhost:4000/datafun/</loc>
 </url>
 </urlset>

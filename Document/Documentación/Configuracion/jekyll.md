@@ -272,6 +272,9 @@ rem cmd
 
 PS G:\XAMPP\htdocs\datafun\docs> bundle exec jekyll serve --livereload --trace
 
+
+bundle exec jekyll serve --livereload --port 8080 --host localhost --trace
+
 ````
 
 Explicación de los flags:
