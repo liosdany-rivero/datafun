@@ -3,6 +3,10 @@ layout: default
 title: "Tipos de centros de costos"
 nav_order: 3
 ---
+# Recursos
+
+Un recurso es un activo 
+
 # Centros de costo
 
 Los centros de costo del sistema se definen estan cosntituidos por:
@@ -18,8 +22,7 @@ Los establecimientos son los centros de costo que son activos en nuestra organiz
 
 Los punros de ventas son los establecimientos que realizan actividades de ventas de recursos.
 
-# Almacén:
+# Almacén
 
-- Un almacén es un establecimiento donde se depositan recursos para su conservación y posterior venta o utiliización en la producción.
-
+Un almacén es un establecimiento donde se depositan recursos para su conservación y posterior venta o utiliización en la producción.
 
