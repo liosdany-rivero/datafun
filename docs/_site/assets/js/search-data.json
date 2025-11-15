@@ -173,5 +173,40 @@
     "url": "/datafun/sistema-accesos/",
     
     "relUrl": "/sistema-accesos/"
+  },"25": {
+    "doc": "Tipos de centros de costos",
+    "title": "💰 Tipos de centros de costos",
+    "content": " ",
+    "url": "/datafun/tipos_centros_costo/#-tipos-de-centros-de-costos",
+    
+    "relUrl": "/tipos_centros_costo/#-tipos-de-centros-de-costos"
+  },"26": {
+    "doc": "Tipos de centros de costos",
+    "title": "🏷️ Generales",
+    "content": "Se clasifican como centros de costo generales los que se utilizan para propositos generales de la aplicación. Entre ellos encontramos: Modulo, Punto de venta y Almacen USD. 🔢 Modulo . | Servirá para clasificar los centros de costo que corresonden a modulos del sistema. | . 💳 Punto de venta . | Servirá para clasificar los centros de costo que corresponden a establecimientos que realizan ventas y depositan dinero en la caja. | . 📦 Almacen en USD . | Servirá para clasificar los centros de costo que se corresponden a almacenes en USD. | . ",
+    "url": "/datafun/tipos_centros_costo/#%EF%B8%8F-generales",
+    
+    "relUrl": "/tipos_centros_costo/#️-generales"
+  },"27": {
+    "doc": "Tipos de centros de costos",
+    "title": "🧾 Específicos",
+    "content": "Son los que se utilizan en los listados de los formularios de entrada y de salida. Son especificos para cada establecimiento o un grupo de establecimientos afines. ",
+    "url": "/datafun/tipos_centros_costo/#-espec%C3%ADficos",
+    
+    "relUrl": "/tipos_centros_costo/#-específicos"
+  },"28": {
+    "doc": "Tipos de centros de costos",
+    "title": "⚙️ Gestión de centros de costo",
+    "content": "La administración de roles se realiza mediante: . centros_costo.php 📄 . 📌 Este archivo corresponde al módulo system . ",
+    "url": "/datafun/tipos_centros_costo/#%EF%B8%8F-gesti%C3%B3n-de-centros-de-costo",
+    
+    "relUrl": "/tipos_centros_costo/#️-gestión-de-centros-de-costo"
+  },"29": {
+    "doc": "Tipos de centros de costos",
+    "title": "Tipos de centros de costos",
+    "content": " ",
+    "url": "/datafun/tipos_centros_costo/",
+    
+    "relUrl": "/tipos_centros_costo/"
   }
 }

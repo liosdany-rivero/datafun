@@ -1,3 +1,9 @@
+---
+layout: default
+title: "Tipos de centros de costos"
+nav_order: 3
+---
+
 # 💰 Tipos de centros de costos
 
 ## 🏷️ Generales
