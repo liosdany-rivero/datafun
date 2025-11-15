@@ -11,11 +11,6 @@ include('../../templates/header.php');
 
 <div class="form-container">
 
-  <?php
-  phpinfo();
-  ?>
-
-
   <!-- Mensaje de bienvenida -->
   <!-- Muestra el nombre de usuario y rol almacenados en la sesión. -->
   <h2>

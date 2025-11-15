@@ -1,21 +1,33 @@
 <?php
-ob_start();
+
 /**
- * SECCIÓN 1: INCLUSIONES INICIALES
+ * Proyecto: Datafun
+ * Desarrollador: liosdany-rivero (GitHub)
+ * Fecha: Noviembre 2025
  */
+
+//================================================================================================
+// 1. Configuración Inicial y Seguridad
+//================================================================================================
+
+ob_start();
 include('../../templates/header.php');
 require_once('../../controllers/auth_admin_check.php');
 require_once('../../controllers/config.php');
 
-/**
- * SECCIÓN 2: PROCESAMIENTO DE FORMULARIOS
- */
+//================================================================================================
+// 2. Procesamiento de Formularios
+//===============================================================================================
+
+// 2.1. Eliminación de Intento Individual
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['delete_attempt'])) {
-    // Validación CSRF
+
+    // 2.1.1. Validación CSRF
     if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
         die("Token CSRF inválido");
     }
 
+    // 2.1.2. Ejecución de Eliminación
     $attempt_id = $_POST['attempt_id'];
     $sql = "DELETE FROM intentos_login WHERE id = ?";
     $stmt = $conn->prepare($sql);
@@ -28,17 +40,21 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['delete_attempt'])) {
     }
     $stmt->close();
 
+    // 2.1.3. Limpieza y Redirección
     unset($_SESSION['csrf_token']);
     header("Location: intentos_login.php");
     exit();
 }
 
+// 2.2. Eliminación Masiva de Intentos
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['delete_all_attempts'])) {
-    // Validación CSRF
+
+    // 2.2.1. Validación CSRF
     if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
         die("Token CSRF inválido");
     }
 
+    // 2.2.2. Ejecución de Eliminación Total
     $sql = "TRUNCATE TABLE intentos_login";
     if ($conn->query($sql)) {
         $_SESSION['success_msg'] = "✅ Todos los intentos fueron eliminados";
@@ -46,21 +62,24 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['delete_all_attempts'])
         $_SESSION['error_msg'] = "⚠️ Error al limpiar la tabla: " . $conn->error;
     }
 
+    // 2.2.3. Limpieza y Redirección
     unset($_SESSION['csrf_token']);
     header("Location: intentos_login.php");
     exit();
 }
 
-/**
- * SECCIÓN 3: GENERACIÓN DE TOKEN CSRF
- */
+//================================================================================================
+// 3. Generación de Token CSRF
+//================================================================================================
+
 if (empty($_SESSION['csrf_token'])) {
     $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
 }
 
-/**
- * SECCIÓN 4: OBTENCIÓN DE REGISTROS
- */
+//================================================================================================
+// 4. Obtención de Registros de Intentos de Login
+//================================================================================================
+
 $login_attempts = [];
 $sql = "SELECT id, direccion_ip, username, hora_intento 
         FROM intentos_login 
@@ -75,11 +94,16 @@ if ($result->num_rows > 0) {
 ob_end_flush();
 ?>
 
-<!-- SECCIÓN 5: INTERFAZ DE USUARIO -->
+<!--================================================================================================
+    5. Interfaz de Usuario - Gestión de Intentos de Login
+================================================================================================-->
+
 <div class="form-container">
     <h2>Registro de Intentos de Login Fallidos</h2>
 
-    <!-- Notificaciones flotantes (nuevo) -->
+    <!--================================================================================================
+        5A. Sistema de Notificaciones
+    ================================================================================================-->
     <?php if (isset($_SESSION['success_msg'])): ?>
         <div id="floatingNotification" class="floating-notification success">
             <?= $_SESSION['success_msg'] ?>
@@ -94,7 +118,9 @@ ob_end_flush();
         <?php unset($_SESSION['error_msg']); ?>
     <?php endif; ?>
 
-    <!-- Tabla principal -->
+    <!--================================================================================================
+        5B. Tabla Principal de Registros
+    ================================================================================================-->
     <table class="table">
         <thead>
             <tr>
@@ -130,7 +156,11 @@ ob_end_flush();
         </tbody>
     </table>
 
-    <!-- Formularios ocultos (sin cambios) -->
+    <!--================================================================================================
+        5C. Formularios de Eliminación
+    ================================================================================================-->
+
+    <!-- 5C.1. Formulario de Eliminación Individual -->
     <div id="deleteFormContainer" class="sub-form" style="display: none;">
         <h3>¿Eliminar registro de intento fallido para <span id="deleteIpDisplay"></span>?</h3>
         <form method="POST" action="intentos_login.php">
@@ -152,11 +182,13 @@ ob_end_flush();
     </div>
 </div>
 
-
 <BR>
 <BR>
 <BR>
 
+<!--================================================================================================
+    5D. Barra de Estado y Acciones Adicionales
+================================================================================================-->
 
 <div id="barra-estado">
     <ul class="secondary-nav-menu">
@@ -164,13 +196,13 @@ ob_end_flush();
     </ul>
 </div>
 
-<!-- SECCIÓN 6: JAVASCRIPT PARA INTERACCIÓN -->
-<!-- SECCIÓN 6: JAVASCRIPT ESPECÍFICO DE PÁGINA -->
+<!--================================================================================================
+    6. Comportamiento de Interfaz - JavaScript
+================================================================================================-->
+
 <script>
     /**
-     * Muestra formulario de eliminación individual
-     * @param {number} attemptId - ID del intento
-     * @param {string} ipAddress - Dirección IP a mostrar
+     * 6.1. Muestra formulario de eliminación individual
      */
     function showDeleteForm(attemptId, ipAddress) {
         hideForms();
@@ -181,7 +213,7 @@ ob_end_flush();
     }
 
     /**
-     * Muestra formulario de eliminación masiva
+     * 6.2. Muestra formulario de eliminación masiva
      */
     function showDeleteAllForm() {
         hideForms();
