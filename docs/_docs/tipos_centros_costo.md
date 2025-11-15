@@ -3,6 +3,9 @@ layout: default
 title: "Tipos de centros de costos"
 nav_order: 3
 ---
+# Centros de costo
+
+Los centros de costo del sistema se definen como el conjunto de establecimientos, 
 
 # 💰 Tipos de centros de costos
 
