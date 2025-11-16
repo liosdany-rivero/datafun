@@ -20,6 +20,9 @@ Los productos son recursos que la organización adquiere para su posterior comer
 
 Una materia prima es un recurso que la organización adquiere para mediante su procesamiento conformar un producto para su porterior comercializacion.
 
+# Consumible
+
+Un consumible es un recurso que adquiere la organización para realizar una actividad de servicio.
 
 # Centros de costo
 
