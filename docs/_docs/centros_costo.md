@@ -6,7 +6,7 @@ nav_order: 3
 # Recursos
 
 Un recurso es un activo que adquiere la organización para posteriormente comercializarlo ya sea directamente o a través de su prosesamiento. También se consideran recursos a los activos que se consumen en el desempeño de alguna actividad de la organización. Los tipos de recursos son productos, materias primas y consumibles.
-- Los productos tienen una unidad de medida que identifica el embalaje en que está envuelto.
+- Los recursos tienen una unidad de medida que identifica el embalaje en que está envuelto.
 - Independientemente de la conformación del recurso de acuerdo a su embalaje cada  recurso tiene un equilalente unitario que permite analizar el mismo a nivel de unidad.
 - Los recursos pueden ser controlados en  usd y en cup.
 - Los recursos pueden ser controlados estableciendo un costo fijo o un costo variable.
@@ -15,6 +15,11 @@ Un recurso es un activo que adquiere la organización para posteriormente comerc
 # Productos
 
 Los productos son recursos que la organización adquiere para su posterior comercialización.
+
+# Materia prima
+
+Una materia prima es un recurso que la organización adquiere para mediante su procesamiento conformar un producto para su porterior comercializacion.
+
 
 # Centros de costo
 
