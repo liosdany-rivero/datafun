@@ -36,9 +36,10 @@ Los establecimientos son los centros de costo que son activos en nuestra organiz
 
 # Puntos de venta
 
-Los punros de ventas son los establecimientos que realizan actividades de ventas de recursos.
+Los puntos de ventas son los establecimientos que realizan actividades de ventas de recursos.
 
 # Almacén
 
 Un almacén es un establecimiento donde se depositan recursos para su conservación y posterior venta o utiliización en la producción.
+- Los almacenes 
 
