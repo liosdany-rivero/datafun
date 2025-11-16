@@ -12,7 +12,7 @@ Un recurso es un activo que adquiere la organización para posteriormente comerc
 - Los recursos pueden ser controlados estableciendo un costo fijo o un costo variable.
 - Los recursos con un costo fijo se caracterizan 
 
-# Productos
+# Producto
 
 Los productos son recursos que la organización adquiere para su posterior comercialización.
 
