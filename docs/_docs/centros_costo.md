@@ -25,7 +25,7 @@ Un consumible es un recurso que adquiere la organización para realizar una acti
 
 # Centros de costo
 
-Los centros de costo del sistema se definen estan cosntituidos por:
+Los centros de costo del sistema se definen estan constituidos por:
 - Los origenes de los recursos que entraron.
 - Los destinos de los recursos que salieron.
 - Los establecimientos de nuestra organización.
