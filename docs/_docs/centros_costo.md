@@ -9,7 +9,7 @@ Un recurso es un activo que adquiere la organización para posteriormente comerc
 - Los productos tienen una unidad de medida que identifica el embalaje en que está envuelto.
 - Independientemente de la conformación del recurso de acuerdo a su embalaje cada  recurso tiene un equilalente unitario que permite analizar el mismo a nivel de unidad.
 - Los productos pueden ser controlados en  usd y en cup.
-
+- Los recursos tienen un costo 
 
 # Productos
 
