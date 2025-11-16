@@ -10,7 +10,6 @@ Un recurso es un activo que adquiere la organización para posteriormente comerc
 - Independientemente de la conformación del recurso de acuerdo a su embalaje cada  recurso tiene un equilalente unitario que permite analizar el mismo a nivel de unidad.
 - Los recursos pueden ser controlados en  usd y en cup.
 - Los recursos pueden ser controlados estableciendo un costo fijo o un costo variable.
-- Los recursos con un costo fijo se caracterizan 
 
 # Producto
 
