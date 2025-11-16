@@ -41,5 +41,8 @@ Los puntos de ventas son los establecimientos que realizan actividades de ventas
 # Almacén
 
 Un almacén es un establecimiento donde se depositan recursos para su conservación y posterior venta o utiliización en la producción.
-- Los almacenes 
+
+# Kiosco 
+
+ 
 
