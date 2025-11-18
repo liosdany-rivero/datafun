@@ -1,0 +1,1 @@
+Quiero escalar mi aplicación donde tengo la tabla centro_costo que tiene los siguientes campos 
